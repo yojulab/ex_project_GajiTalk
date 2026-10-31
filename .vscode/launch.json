@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Frontend User: Next.js (Port 30010)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend_user",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Frontend Admin: React Admin Vite (Port 30011)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend_admin",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "mobileApp: Mobile Web Simulator (Port 30012)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/mobileApp",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Backend: NestJS REST API (Port 30014)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "(선택) Chrome 디버거 연결 (Attach only - Port 9222)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Fullstack: 4개 서버 동시 실행 (:30010, :30011, :30012, :30014)",
+      "configurations": [
+        "Backend: NestJS REST API (Port 30014)",
+        "Frontend User: Next.js (Port 30010)",
+        "Frontend Admin: React Admin Vite (Port 30011)",
+        "mobileApp: Mobile Web Simulator (Port 30012)"
+      ]
+    }
+  ]
+}
