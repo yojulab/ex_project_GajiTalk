@@ -1,27 +1,31 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# eCare24 이러닝 플랫폼 - 포트 관리 및 컴파일 통합 스크립트 (run_port.sh)
+# 수형 (SOOHYUNG) / 가지톡 (GajiTalk) 플랫폼 - 포트 관리 및 컴파일 통합 스크립트 (run_port.sh)
+#
+# [할당 포트 및 ./apps/ 폴더 구조]
+#   • 30018 (mobile / app)   : ./apps/mobile-app  (정원주·조경사 모바일 웹/앱 - React + Vite)
+#   • 30019 (admin)          : ./apps/admin-web   (통합 관리자 웹 & 첨삭 스튜디오 - React + Vite)
+#   • 30020 (api / backend)  : ./apps/backend     (백엔드 REST API & AI/매칭 서버 - Node.js + MongoDB)
 #
 # [사용법]
 #   ./run_port.sh [명령어] [대상]
 #   ./compile.sh  [대상]             (컴파일 단축 실행)
 #
 # [주요 명령어]
-#   • start (또는 prod) [all|30010|30011|30012] : 운영 모드 기동 (기본값)
-#   • dev               [all|30010|30011|30012] : 개발 모드(HMR) 기동
-#   • build (또는 compile) [all|30010|30011|30012] : 컴파일 / 빌드
-#   • stop              [all|30010|30011|30012] : 서비스 종료
-#   • restart           [all|30010|30011|30012] : 재시작
+#   • start (또는 prod) [all|30018|30019|30020] : 운영 모드 기동 (기본값)
+#   • dev               [all|30018|30019|30020] : 개발 모드(HMR) 기동
+#   • build (또는 compile) [all|30018|30019|30020] : 컴파일 / 빌드
+#   • stop              [all|30018|30019|30020] : 서비스 종료
+#   • restart           [all|30018|30019|30020] : 재시작
 #   • status                                    : 포트 가동 상태 점검
 #
 # [간편 축약 실행 예시]
-#   • ./run_port.sh all             -> 전체 서비스 운영 모드 기동
-#   • ./run_port.sh 30010           -> 30010 단일 운영 모드 기동
+#   • ./run_port.sh all             -> 전체 서비스(30018, 30019, 30020) 운영 모드 기동
+#   • ./run_port.sh 30018           -> 30018(모바일 앱) 단일 운영 모드 기동
 #   • ./compile.sh all              -> 전체 서비스 일괄 컴파일
 #   • ./run_port.sh stop all        -> 전체 서비스 일괄 중지
 #   • ./run_port.sh status          -> 현재 포트 및 PID 점검
 # ==============================================================================
-# source/dot(.) 실행 시 현재 대화형 터미널이 닫히는 현상을 방지하기 위해 서브쉘로 격리 실행
 if [ "$0" != "${BASH_SOURCE[0]}" ]; then
   bash "${BASH_SOURCE[0]}" "$@"
   return $? 2>/dev/null || true
@@ -42,19 +46,15 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-# 하위 워크스페이스 .bin 심볼릭 링크 자동 점검 및 복원 (vite/nest: not found 영구 방지)
+# 하위 워크스페이스(./apps/*) .bin 심볼릭 링크 자동 점검 및 복원
 ensure_bin_links() {
   local root_bin="${PROJECT_DIR}/node_modules/.bin"
   if [ -d "$root_bin" ]; then
-    # ts-node 루트 바이너리 링크 보장 (npm run db:init, db:reset 등 실행용)
-    if [ ! -e "${root_bin}/ts-node" ] && [ -f "${PROJECT_DIR}/backend/node_modules/ts-node/dist/bin.js" ]; then
-      ln -sf "../backend/node_modules/ts-node/dist/bin.js" "${root_bin}/ts-node" 2>/dev/null || true
-    fi
-    for sub in frontend_user frontend_admin mobileApp backend; do
+    for sub in apps/mobile-app apps/admin-web apps/backend; do
       if [ -d "${PROJECT_DIR}/${sub}" ]; then
         mkdir -p "${PROJECT_DIR}/${sub}/node_modules"
         if [ ! -e "${PROJECT_DIR}/${sub}/node_modules/.bin" ]; then
-          ln -s "../../node_modules/.bin" "${PROJECT_DIR}/${sub}/node_modules/.bin" 2>/dev/null || true
+          ln -s "../../../node_modules/.bin" "${PROJECT_DIR}/${sub}/node_modules/.bin" 2>/dev/null || true
         fi
       fi
     done
@@ -62,7 +62,7 @@ ensure_bin_links() {
 }
 ensure_bin_links
 
-# 포트 활성 여부 점검 (도커 최소 환경 호환 3중 안전망)
+# 포트 활성 여부 점검 (소켓 프로브 + /dev/tcp 안전망)
 is_port_in_use() {
   local port=$1
   if command -v python3 >/dev/null 2>&1; then
@@ -84,15 +84,9 @@ get_port_pids() {
   local pids=""
 
   case "$port" in
-    30010) pids=$(pgrep -f "(next.*30010|next-server.*14|frontend_user)" 2>/dev/null || true) ;;
-    30011) pids=$(pgrep -f "(vite.*30011|frontend_admin)" 2>/dev/null || true) ;;
-    30012) pids=$(pgrep -f "(vite.*30012|mobileApp)" 2>/dev/null || true) ;;
-    30014)
-      pids=$(pgrep -f "(node.*dist/main|nest start|ts-node.*src/main)" 2>/dev/null || true)
-      if [ -z "$pids" ]; then
-        pids=$(pgrep -f "dist/main" 2>/dev/null || true)
-      fi
-      ;;
+    30018) pids=$(pgrep -f "(vite.*30018|PORT=30018|ex_project_GajiTalk/apps/mobile-app)" 2>/dev/null || true) ;;
+    30019) pids=$(pgrep -f "(vite.*30019|PORT=30019|ex_project_GajiTalk/apps/admin-web)" 2>/dev/null || true) ;;
+    30020) pids=$(pgrep -f "(PORT=30020|ex_project_GajiTalk/apps/backend)" 2>/dev/null || true) ;;
   esac
 
   if [ -z "$pids" ] && command -v timeout >/dev/null 2>&1 && command -v fuser >/dev/null 2>&1; then
@@ -102,14 +96,13 @@ get_port_pids() {
   echo "$pids" | tr '\n' ' ' | xargs
 }
 
-# 서비스 메타데이터 조회: 이름, 워크스페이스명, 빌드산출물 파일
+# 서비스 메타데이터 조회: 상대경로:서비스명:빌드산출물
 get_service_meta() {
   local port=$1
   case "$port" in
-    30010) echo "frontend_user:수강생 포털 (Next.js):.next/BUILD_ID" ;;
-    30011) echo "frontend_admin:관리자/CS 포털 (Vite):dist/index.html" ;;
-    30012) echo "mobileApp:모바일 시뮬레이터 (Vite):dist/index.html" ;;
-    30014) echo "backend:엔터프라이즈 REST API (NestJS):dist/main.js" ;;
+    30018) echo "apps/mobile-app:모바일 앱 - 정원주·조경사 (Vite):dist/index.html" ;;
+    30019) echo "apps/admin-web:통합 관리자 웹 & 첨삭 스튜디오 (Vite):dist/index.html" ;;
+    30020) echo "apps/backend:백엔드 REST API & AI/매칭 엔진 (Node.js):dist/index.js" ;;
     *)     echo "unknown:알 수 없음:" ;;
   esac
 }
@@ -117,12 +110,10 @@ get_service_meta() {
 # ------------------------------------------------------------------------------
 # 1. 컴파일 (Build / Compile)
 # ------------------------------------------------------------------------------
-# 빌드 도구(tsc, vite, next, nest) 누락 시 devDependencies 포함 재설치
-# (NODE_ENV=production 환경에서 npm install 시 devDependencies가 생략되어 'tsc: not found' 발생 방지)
 ensure_build_deps() {
   local root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  if [ ! -e "$root/node_modules/typescript/bin/tsc" ] || [ ! -e "$root/node_modules/vite/bin/vite.js" ] || [ ! -e "$root/node_modules/.bin/nest" ]; then
-    echo -e "${YELLOW}⚠ 빌드 도구(typescript/vite/nest) 누락 감지 → devDependencies 포함 설치 진행...${NC}"
+  if [ -f "$root/package.json" ] && [ ! -d "$root/node_modules" ]; then
+    echo -e "${YELLOW}⚠ 루트 node_modules 누락 감지 → 의존성 설치 진행...${NC}"
     (cd "$root" && NODE_ENV=development npm install --include=dev) || return 1
   fi
 }
@@ -131,12 +122,17 @@ build_service() {
   local port=$1
   local meta
   meta=$(get_service_meta "$port")
-  local ws_name=$(echo "$meta" | cut -d: -f1)
+  local ws_path=$(echo "$meta" | cut -d: -f1)
   local title=$(echo "$meta" | cut -d: -f2)
 
+  if [ ! -d "${PROJECT_DIR}/${ws_path}" ] || [ ! -f "${PROJECT_DIR}/${ws_path}/package.json" ]; then
+    echo -e "   ${YELLOW}⚠ [:${port}] ${PROJECT_DIR}/${ws_path}/package.json 파일이 아직 존재하지 않습니다.${NC}\n"
+    return 1
+  fi
+
   ensure_build_deps || { echo -e "   ${RED}✗ 의존성 설치 실패${NC}"; return 1; }
-  echo -e "🔨 [:${port}] ${BOLD}${title}${NC} 컴파일 시작..."
-  if npm run build --workspace="${ws_name}"; then
+  echo -e "🔨 [:${port}] ${BOLD}${title}${NC} (${ws_path}) 컴파일 시작..."
+  if (cd "${PROJECT_DIR}/${ws_path}" && npm run build); then
     echo -e "   ${GREEN}✓ [:${port}] 컴파일 완료${NC}\n"
     return 0
   else
@@ -148,23 +144,21 @@ build_service() {
 cmd_build() {
   local target=${1:-all}
   echo -e "${CYAN}=================================================================${NC}"
-  echo -e "${CYAN} 📦 eCare24 컴파일 매니저 (대상: ${target})${NC}"
+  echo -e "${CYAN} 🌲 수형(SOOHYUNG) / 가지톡 컴파일 매니저 (대상: ${target})${NC}"
   echo -e "${CYAN}=================================================================${NC}"
 
   case "$target" in
-    30010|user)    build_service 30010 ;;
-    30011|admin)   build_service 30011 ;;
-    30012|mobile)  build_service 30012 ;;
-    30014|api|backend) build_service 30014 ;;
+    30018|mobile|app|mobile-app) build_service 30018 ;;
+    30019|admin|admin-web)       build_service 30019 ;;
+    30020|api|backend)           build_service 30020 ;;
     all)
-      build_service 30010
-      build_service 30011
-      build_service 30012
-      build_service 30014
-      echo -e "${GREEN}${BOLD}🎉 모든 서비스 컴파일 완료!${NC}"
+      build_service 30020
+      build_service 30018
+      build_service 30019
+      echo -e "${GREEN}${BOLD}🎉 모든 서비스(30018, 30019, 30020) 컴파일 완료!${NC}"
       ;;
     *)
-      echo -e "${RED}잘못된 대상입니다: ${target} (사용 가능: all, 30010, 30011, 30012, 30014)${NC}"
+      echo -e "${RED}잘못된 대상입니다: ${target} (사용 가능: all, 30018, 30019, 30020)${NC}"
       exit 1
       ;;
   esac
@@ -199,18 +193,16 @@ stop_service() {
 cmd_stop() {
   local target=${1:-all}
   case "$target" in
-    30010|user)    stop_service 30010 ;;
-    30011|admin)   stop_service 30011 ;;
-    30012|mobile)  stop_service 30012 ;;
-    30014|api|backend) stop_service 30014 ;;
+    30018|mobile|app|mobile-app) stop_service 30018 ;;
+    30019|admin|admin-web)       stop_service 30019 ;;
+    30020|api|backend)           stop_service 30020 ;;
     all)
-      stop_service 30010
-      stop_service 30011
-      stop_service 30012
-      stop_service 30014
+      stop_service 30018
+      stop_service 30019
+      stop_service 30020
       ;;
     *)
-      echo -e "${RED}잘못된 대상입니다: ${target}${NC}"
+      echo -e "${RED}잘못된 대상입니다: ${target} (사용 가능: all, 30018, 30019, 30020)${NC}"
       exit 1
       ;;
   esac
@@ -224,13 +216,19 @@ start_service() {
   local mode=$2 # prod | dev
   local meta
   meta=$(get_service_meta "$port")
-  local ws_name=$(echo "$meta" | cut -d: -f1)
+  local ws_path=$(echo "$meta" | cut -d: -f1)
+  local ws_slug=$(echo "$ws_path" | tr '/' '_')
   local title=$(echo "$meta" | cut -d: -f2)
   local build_file=$(echo "$meta" | cut -d: -f3)
-  local log_file="${LOG_DIR}/ecare24_${ws_name}_${TODAY}.log"
+  local log_file="${LOG_DIR}/soohyung_${ws_slug}_${TODAY}.log"
+
+  if [ ! -d "${PROJECT_DIR}/${ws_path}" ] || [ ! -f "${PROJECT_DIR}/${ws_path}/package.json" ]; then
+    echo -e "⚠️ [:${port}] ${PROJECT_DIR}/${ws_path}/package.json 파일이 아직 준비되지 않았습니다."
+    return 1
+  fi
 
   # 운영 모드인데 빌드 산출물이 없으면 자동 컴파일 선행
-  if [ "$mode" = "prod" ] && [ -n "$build_file" ] && [ ! -f "${PROJECT_DIR}/${ws_name}/${build_file}" ]; then
+  if [ "$mode" = "prod" ] && [ -n "$build_file" ] && [ ! -f "${PROJECT_DIR}/${ws_path}/${build_file}" ] && [ ! -f "${PROJECT_DIR}/${ws_path}/dist/main.js" ]; then
     echo -e "⚠️ [:${port}] 빌드 산출물이 없어 사전 컴파일을 자동 실행합니다..."
     build_service "$port" || return 1
   fi
@@ -238,29 +236,23 @@ start_service() {
   # 기존 점유 프로세스 정리
   stop_service "$port" >/dev/null 2>&1
 
-  echo -e "🚀 [:${port}] ${BOLD}${title}${NC} 기동 중 (${mode} 모드)..."
-  cd "${PROJECT_DIR}/${ws_name}"
+  echo -e "🚀 [:${port}] ${BOLD}${title}${NC} (${ws_path}) 기동 중 (${mode} 모드)..."
+  cd "${PROJECT_DIR}/${ws_path}"
 
   local bg_pid=""
   if [ "$mode" = "prod" ]; then
-    setsid env NODE_ENV=production HOSTNAME="0.0.0.0" PORT="$port" npm run start </dev/null > "$log_file" 2>&1 &
+    setsid env NODE_ENV=production HOST="0.0.0.0" HOSTNAME="0.0.0.0" PORT="$port" npm run start </dev/null > "$log_file" 2>&1 &
     bg_pid=$!
   else
-    if [ "$port" = "30014" ]; then
-      setsid env NODE_ENV=development PORT="$port" npm run start:dev </dev/null > "$log_file" 2>&1 &
-      bg_pid=$!
-    else
-      setsid env NODE_ENV=development HOSTNAME="0.0.0.0" PORT="$port" npm run dev </dev/null > "$log_file" 2>&1 &
-      bg_pid=$!
-    fi
+    setsid env NODE_ENV=development HOST="0.0.0.0" HOSTNAME="0.0.0.0" PORT="$port" npm run dev </dev/null > "$log_file" 2>&1 &
+    bg_pid=$!
   fi
 
   cd "${PROJECT_DIR}"
   echo -e "   로그: ${log_file}"
 
-  # 포트 바인딩 확인 (백엔드는 15초, 프론트엔드는 10초 대기)
   local max_wait=10
-  if [ "$port" = "30014" ]; then
+  if [ "$port" = "30020" ]; then
     max_wait=15
   fi
 
@@ -270,7 +262,6 @@ start_service() {
       echo -e "   ${GREEN}✓ [:${port}] ONLINE 기동 성공 (PID: $(get_port_pids "$port"))${NC}\n"
       return 0
     fi
-    # 런처 프로세스가 조기 종료되고 포트/자식 PID도 없는 경우 비정상 종료 판단
     if [ -n "$bg_pid" ] && ! kill -0 "$bg_pid" 2>/dev/null; then
       local current_pids=$(get_port_pids "$port")
       if [ -z "$current_pids" ]; then
@@ -293,22 +284,20 @@ cmd_start() {
   local target=${2:-all}
 
   echo -e "${CYAN}=================================================================${NC}"
-  echo -e "${CYAN} 🏥 eCare24 서비스 기동 매니저 (모드: ${mode}, 대상: ${target})${NC}"
+  echo -e "${CYAN} 🌲 수형(SOOHYUNG) / 가지톡 서비스 기동 매니저 (모드: ${mode}, 대상: ${target})${NC}"
   echo -e "${CYAN}=================================================================${NC}"
 
   case "$target" in
-    30010|user)    start_service 30010 "$mode" ;;
-    30011|admin)   start_service 30011 "$mode" ;;
-    30012|mobile)  start_service 30012 "$mode" ;;
-    30014|api|backend) start_service 30014 "$mode" ;;
+    30018|mobile|app|mobile-app) start_service 30018 "$mode" ;;
+    30019|admin|admin-web)       start_service 30019 "$mode" ;;
+    30020|api|backend)           start_service 30020 "$mode" ;;
     all)
-      start_service 30014 "$mode" # 백엔드 우선 기동
-      start_service 30010 "$mode"
-      start_service 30011 "$mode"
-      start_service 30012 "$mode"
+      start_service 30020 "$mode" # 백엔드(:30020) 우선 기동
+      start_service 30018 "$mode" # 모바일 앱(:30018) 기동
+      start_service 30019 "$mode" # 관리자 웹(:30019) 기동
       ;;
     *)
-      echo -e "${RED}잘못된 대상입니다: ${target}${NC}"
+      echo -e "${RED}잘못된 대상입니다: ${target} (사용 가능: all, 30018, 30019, 30020)${NC}"
       exit 1
       ;;
   esac
@@ -319,30 +308,30 @@ cmd_start() {
 # ------------------------------------------------------------------------------
 cmd_status() {
   echo -e "${CYAN}=================================================================${NC}"
-  echo -e "${CYAN} 🏥 eCare24 통합 서비스 상태 점검 (status)${NC}"
+  echo -e "${CYAN} 🌲 수형(SOOHYUNG) / 가지톡 통합 서비스 상태 점검 (status)${NC}"
   echo -e "${CYAN}=================================================================${NC}"
 
-  for port in 30014 30010 30011 30012; do
+  for port in 30020 30018 30019; do
     local meta
     meta=$(get_service_meta "$port")
+    local ws_path=$(echo "$meta" | cut -d: -f1)
     local title=$(echo "$meta" | cut -d: -f2)
     local pids
     pids=$(get_port_pids "$port")
 
     if is_port_in_use "$port"; then
-      echo -e "  • [:${port}] ${BOLD}${title}${NC} : ${GREEN}ONLINE${NC} (PID: ${pids:-확인중}) ✓"
+      echo -e "  • [:${port}] ${BOLD}${title}${NC} (${ws_path}) : ${GREEN}ONLINE${NC} (PID: ${pids:-확인중}) ✓"
     elif [ -n "$pids" ]; then
-      echo -e "  • [:${port}] ${BOLD}${title}${NC} : ${YELLOW}INITIALIZING / PORT_WAIT${NC} (PID: ${pids})"
+      echo -e "  • [:${port}] ${BOLD}${title}${NC} (${ws_path}) : ${YELLOW}INITIALIZING / PORT_WAIT${NC} (PID: ${pids})"
     else
-      echo -e "  • [:${port}] ${BOLD}${title}${NC} : ${RED}STOPPED${NC}"
+      echo -e "  • [:${port}] ${BOLD}${title}${NC} (${ws_path}) : ${RED}STOPPED${NC}"
     fi
   done
 
-  echo -e "\n🌐 접속 URL:"
-  echo -e "   - 백엔드 REST API : http://0.0.0.0:30014/api/v1 (문서: /api/docs)"
-  echo -e "   - 수강생 포털     : http://0.0.0.0:30010"
-  echo -e "   - 관리자 포털     : http://0.0.0.0:30011"
-  echo -e "   - 모바일 포털     : http://0.0.0.0:30012"
+  echo -e "\n🌐 접속 URL (./apps/ 하위 멀티 서비스):"
+  echo -e "   - [Port 30018] 모바일 앱 (정원주·조경사) : http://0.0.0.0:30018  (./apps/mobile-app)"
+  echo -e "   - [Port 30019] 통합 관리자 웹 & 스튜디오 : http://0.0.0.0:30019  (./apps/admin-web)"
+  echo -e "   - [Port 30020] 백엔드 REST API 서버      : http://0.0.0.0:30020/api  (./apps/backend)"
   echo -e "${CYAN}=================================================================${NC}"
 }
 
@@ -352,7 +341,6 @@ cmd_status() {
 MAIN_ARG="${1:-}"
 SCRIPT_BASE=$(basename "$0")
 
-# compile.sh로 직접 호출된 경우 compile 모드로 자동 라우팅
 if [ "$SCRIPT_BASE" = "compile.sh" ]; then
   cmd_build "${MAIN_ARG:-all}"
   exit $?
@@ -379,24 +367,23 @@ case "$MAIN_ARG" in
   status)
     cmd_status
     ;;
-  30010|30011|30012|30014|all)
-    # 인자로 포트나 all만 넘긴 경우 운영 모드 start 기본 실행
+  30018|30019|30020|mobile|admin|api|backend|all)
     cmd_start "prod" "$MAIN_ARG"
     ;;
   "")
     cmd_status
     echo -e "\n💡 ${BOLD}간편 사용 가이드:${NC}"
-    echo -e "   • ./run_port.sh all              (운영 모드 전체 기동)"
+    echo -e "   • ./run_port.sh all              (운영 모드 전체 기동: 30018, 30019, 30020)"
     echo -e "   • ./run_port.sh dev all          (개발 모드 전체 기동)"
     echo -e "   • ./run_port.sh compile all      (전체 컴파일 / 빌드, 또는 ./compile.sh all)"
     echo -e "   • ./run_port.sh stop all         (전체 프로세스 종료)"
     echo -e "   • ./run_port.sh restart all      (전체 재시작)"
     echo -e "   • ./run_port.sh status           (가동 상태 점검)"
-    echo -e "   ※ 대상 자리에 30010, 30011, 30012, 30014를 지정하여 개별 제어 가능\n"
+    echo -e "   ※ 대상 자리에 30018(mobile), 30019(admin), 30020(backend)을 지정하여 개별 제어 가능\n"
     ;;
   *)
     echo -e "${RED}알 수 없는 명령어: ${MAIN_ARG}${NC}"
-    echo -e "사용법: ./run_port.sh [start|dev|build|stop|restart|status] [all|30010|30011|30012|30014]"
+    echo -e "사용법: ./run_port.sh [start|dev|build|stop|restart|status] [all|30018|30019|30020]"
     exit 1
     ;;
 esac

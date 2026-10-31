@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "postgres-ecare24": {
+    "mongodb-soohyung": {
       "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-postgres",
-        "postgresql://ecare24_app:ecare24_secret_2026@localhost:5432/ecare24"
+        "mcp-mongo-server",
+        "mongodb://localhost:27017/soohyung"
       ],
       "env": {
         "DEBUG": "false"

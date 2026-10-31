@@ -1,0 +1,25 @@
+{
+  "name": "soohyung-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "수형 (SOOHYUNG) / 가지톡 (GajiTalk) — 조경·수목 전지(가지치기) AI 시뮬레이션 및 정원주-조경사 O2O 매칭 플랫폼",
+  "workspaces": [
+    "apps/mobile-app",
+    "apps/admin-web",
+    "apps/backend"
+  ],
+  "scripts": {
+    "start": "./run_port.sh start all",
+    "dev": "./run_port.sh dev all",
+    "build": "./compile.sh all",
+    "stop": "./run_port.sh stop all",
+    "restart": "./run_port.sh restart all",
+    "status": "./run_port.sh status",
+    "dev:mobile": "./run_port.sh dev 30018",
+    "dev:admin": "./run_port.sh dev 30019",
+    "dev:backend": "./run_port.sh dev 30020",
+    "build:mobile": "./compile.sh 30018",
+    "build:admin": "./compile.sh 30019",
+    "build:backend": "./compile.sh 30020"
+  }
+}

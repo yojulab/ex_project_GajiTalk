@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-TASK="${1:-"eCare24 LMS 기능 구현 및 테스트 검증"}"
+TASK="${1:-"수형(SOOHYUNG) 조경·수목 전지 AI 시뮬레이션 및 정원주-조경사 매칭 플랫폼(30018/30019/30020) 구현 및 검증"}"
 MAX_ITERATIONS="${2:-10}"
 PROMISE="${3:-"PROMISE_MET: COMPLETED"}"
 
@@ -17,7 +17,7 @@ STATE_FILE="$LOOP_DIR/state.json"
 TASK_FILE="$LOOP_DIR/task.md"
 
 echo "=========================================================="
-echo " Starting Ralph Loop (Bash Engine)"
+echo " Starting Ralph Loop (Bash Engine) — SOOHYUNG / GajiTalk"
 echo " Task: $TASK"
 echo " Max Iterations: $MAX_ITERATIONS"
 echo " Completion Promise: $PROMISE"
@@ -40,7 +40,7 @@ EOF
 # Initialize task.md if not exists
 if [ ! -f "$TASK_FILE" ]; then
   cat <<EOF > "$TASK_FILE"
-# Ralph Loop Task Checklist
+# Ralph Loop Task Checklist (SOOHYUNG / GajiTalk)
 - [ ] $TASK
 EOF
 fi
@@ -77,9 +77,6 @@ with open('$STATE_FILE', 'w') as f: json.dump(s, f, indent=2)
   fi
 
   echo ">>> Remaining tasks: $REMAINING_TASKS. Next step in progress..."
-  
-  # Simulated step or trigger external runner
-  # In actual environment, this coordinates with the workspace toolchain or git commit
   sleep 1
   
   ITERATION=$((ITERATION + 1))

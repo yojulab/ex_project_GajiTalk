@@ -27,16 +27,18 @@ Thumbs.db
 logs/
 .cache/
 
-# Playwright Artifacts (스냅샷 이미지는 커밋 가능하나 리포트 등은 제외)
+# Playwright & Vite Artifacts (./apps/* 하위 구조)
 tests/reports/
 tests/test-results/
-frontend_admin/.vite/
-frontend_user/.vite/
-mobileApp/.vite/
+tests/snapshots/
+apps/mobile-app/.vite/
+apps/mobile-app/dist/
+apps/admin-web/.vite/
+apps/admin-web/dist/
+apps/backend/dist/
 
 # TypeScript / Vite 부산물
 *.tsbuildinfo
-next-env.d.ts
 vite.config.js
 vite.config.d.ts
 
@@ -52,5 +54,3 @@ vite.config.d.ts
 # 프로세스 PID 파일 및 백업
 *.pid
 .env_backups/
-tests/snapshots/
-scripts/.db_snapshot.json

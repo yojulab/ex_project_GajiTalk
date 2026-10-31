@@ -1,19 +1,22 @@
 {
   "name": "harness",
-  "version": "2.5.0-gemini",
-  "description": "Team-Architecture Factory and Harness Engineering with Ralph Loop, Git Workflow, Caregiver Clinical Terminology & UI Tagging Inspection System for eCare24",
-  "author": "revfactory (re-architected for Gemini)",
+  "version": "3.0.0-gemini-soohyung",
+  "description": "Team-Architecture Factory & Multi-Agent Orchestration with Ralph Loop, Git Workflow, Arboriculture Terminology & UI Tagging Inspection System for SOOHYUNG (GajiTalk) Platform (:30018, :30019, :30020)",
+  "author": "revfactory (re-architected for Gemini & SOOHYUNG Platform)",
   "entrypoint": "skills/harness/SKILL.md",
   "skills": [
     "harness",
     "harness-evolve",
-    "ralph-loop"
+    "ralph-loop",
+    "pruning-simulation-ai",
+    "landscaper-matching-o2o"
   ],
   "rules": [
     "rules/harness-engineering.md",
     "rules/loop-engineering.md",
-    "rules/ecare24-domain.md",
-    "rules/caregiver-terminology.md",
+    "rules/soohyung-domain.md",
+    "rules/arboriculture-terminology.md",
+    "rules/orchestration-pipeline.md",
     "rules/ui-tagging-inspection.md",
     "rules/git-workflow.md"
   ]
