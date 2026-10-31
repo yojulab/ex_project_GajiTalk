@@ -115,3 +115,4 @@ ex_project_GajiTalk/
   - `GET /api/admin/matching` (전체 매칭 진행 현황 모니터링 및 수동 배정)
   - `PUT /api/admin/simulations/:id/review` (관리자/전문가용 Canvas 절단선 교정 및 AI 데이터셋 축적)
   - `POST /api/admin/species` (수종 도감, 전지 룰셋 및 수종별 권장 시공 단가표 등록/수정)
+

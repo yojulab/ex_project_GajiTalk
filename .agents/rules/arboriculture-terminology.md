@@ -49,3 +49,4 @@
 | **Mobile Garden & Canvas UX Specialist** | `BranchOverlayCanvas`에서 가지 유형별 직관적 색상 구분 및 절단선(가위 아이콘) 툴팁 노출, 가상 가위질 스와이프 시 자연스러운 실사 전환 UX 구현. |
 | **O2O Matching & Bidding Specialist** | 조경사 견적서 작성 시 수고(m), 그루 수, 작업 난이도(소나무 적심 등) 및 상세 비용(`laborCost`, `equipmentCost`, `wasteDisposalCost`)이 명확히 연동되도록 구현. |
 | **Admin Studio & Horticulture Specialist** | `tree_species` 도감에 소나무(반송/조형소나무), 단풍나무, 배롱나무, 유실수 등의 적정 전지 시기(`pruningSeason`), 룰셋(`pruningRules`), 수고별 표준 단가(`standardPriceGuide`)를 정확히 반영. |
+
