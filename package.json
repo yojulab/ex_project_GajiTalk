@@ -21,6 +21,8 @@
     "build:mobile": "./compile.sh 30018",
     "build:admin": "./compile.sh 30019",
     "build:backend": "./compile.sh 30020"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
   }
 }
-

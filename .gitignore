@@ -31,6 +31,9 @@ logs/
 tests/reports/
 tests/test-results/
 tests/snapshots/
+screenshots/
+*.png
+*.jpg
 apps/mobile-app/.vite/
 apps/mobile-app/dist/
 apps/admin-web/.vite/

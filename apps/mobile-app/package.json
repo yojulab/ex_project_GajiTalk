@@ -1,0 +1,31 @@
+{
+  "name": "mobile-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "수형 (SOOHYUNG) 정원주·조경사 모바일 웹/앱 (React + Vite)",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 30018",
+    "build": "tsc && vite build",
+    "start": "vite preview --host 0.0.0.0 --port 30018",
+    "preview": "vite preview --host 0.0.0.0 --port 30018"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.372.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10"
+  }
+}
+
