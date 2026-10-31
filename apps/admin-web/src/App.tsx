@@ -7,6 +7,7 @@ import { MatchingManagePage } from './pages/MatchingManagePage';
 import { LandscaperVerifyPage } from './pages/LandscaperVerifyPage';
 import { SimulationReviewPage } from './pages/SimulationReviewPage';
 import { SpeciesManagePage } from './pages/SpeciesManagePage';
+import { UserManagePage } from './pages/UserManagePage';
 import {
   LayoutDashboard,
   Layers,
@@ -18,7 +19,8 @@ import {
   Shield,
   LogIn,
   LogOut,
-  UserCheck
+  UserCheck,
+  Users
 } from 'lucide-react';
 
 const AdminMainContent: React.FC = () => {
@@ -28,6 +30,7 @@ const AdminMainContent: React.FC = () => {
   const getPageMeta = () => {
     switch (activeMenu) {
       case 'dashboard': return { title: '통합 운영 대시보드', code: 'P50' };
+      case 'users': return { title: '통합 회원 및 권한 관리', code: 'P55' };
       case 'matching': return { title: '매칭 및 분쟁 중재', code: 'P51' };
       case 'verify': return { title: '조경사 자격 심사', code: 'P52' };
       case 'studio': return { title: 'AI 전지 검수 스튜디오', code: 'P53' };
@@ -62,6 +65,7 @@ const AdminMainContent: React.FC = () => {
             <nav className="space-y-1 text-xs">
               {[
                 { id: 'dashboard', label: '운영 대시보드', code: 'P50', icon: LayoutDashboard },
+                { id: 'users', label: '회원 및 권한 관리', code: 'P55', icon: Users },
                 { id: 'matching', label: '매칭 & 분쟁 중재', code: 'P51', icon: Layers },
                 { id: 'verify', label: '조경사 파트너 심사', code: 'P52', icon: Award },
                 { id: 'studio', label: '전문가 첨삭 스튜디오', code: 'P53', icon: Scissors },
@@ -171,6 +175,7 @@ const AdminMainContent: React.FC = () => {
 
           <main className="flex-1 p-8">
             {activeMenu === 'dashboard' && <DashboardPage />}
+            {activeMenu === 'users' && <UserManagePage />}
             {activeMenu === 'matching' && <MatchingManagePage />}
             {activeMenu === 'verify' && <LandscaperVerifyPage />}
             {activeMenu === 'studio' && <SimulationReviewPage />}

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { User } from '../models/User.model';
 import { PruningSimulation } from '../models/PruningSimulation.model';
 import { MatchingRequest } from '../models/MatchingRequest.model';
@@ -232,6 +233,145 @@ export class AdminController {
         message: `수종 [${koreanName}] 도감 및 단가표가 저장되었습니다.`,
         species
       });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 9. 회원 관리: 회원 목록 조회 및 통계
+  public static async getUsers(req: Request, res: Response): Promise<void> {
+    try {
+      const { search, role } = req.query;
+      const filter: any = {};
+
+      if (role && role !== 'ALL') {
+        filter.roles = role;
+      }
+
+      if (search) {
+        const searchRegex = new RegExp(String(search).trim(), 'i');
+        filter.$or = [
+          { name: searchRegex },
+          { email: searchRegex },
+          { phone: searchRegex }
+        ];
+      }
+
+      const [users, totalCount, memberCount, landscaperCount, managerCount, adminCount] = await Promise.all([
+        User.find(filter).select('-passwordHash').sort({ createdAt: -1 }),
+        User.countDocuments(),
+        User.countDocuments({ roles: 'member' }),
+        User.countDocuments({ roles: '조경사' }),
+        User.countDocuments({ roles: '관리 매니저' }),
+        User.countDocuments({ roles: 'admin' })
+      ]);
+
+      res.json({
+        success: true,
+        stats: {
+          totalCount,
+          memberCount,
+          landscaperCount,
+          managerCount,
+          adminCount
+        },
+        users
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 10. 회원 관리: 관리자 회원 직접 등록
+  public static async createUser(req: Request, res: Response): Promise<void> {
+    try {
+      const { name, email, password, phone, roles, profileImage, landscaperProfile } = req.body;
+      const cleanEmail = String(email).trim().toLowerCase();
+      const existing = await User.findOne({ email: cleanEmail });
+      if (existing) {
+        res.status(400).json({ success: false, message: '이미 등록된 이메일입니다.' });
+        return;
+      }
+
+      let assignedRoles = ['member'];
+      if (Array.isArray(roles) && roles.length > 0) {
+        assignedRoles = roles.filter(r => ['member', 'admin', '조경사', '관리 매니저'].includes(r));
+      }
+
+      const passwordHash = await bcrypt.hash(password || 'admin123', 10);
+      const isLandscaper = assignedRoles.includes('조경사');
+
+      const user = new User({
+        name: String(name).trim(),
+        email: cleanEmail,
+        passwordHash,
+        phone: phone || '',
+        roles: assignedRoles,
+        profileImage: profileImage || '',
+        landscaperProfile: isLandscaper ? (landscaperProfile || {
+          companyName: name,
+          experienceYears: 1,
+          certifications: [],
+          specialties: ['수목전지'],
+          serviceAreas: ['전국'],
+          verificationStatus: 'VERIFIED',
+          isMasterBadge: false,
+          portfolios: []
+        }) : undefined
+      });
+
+      await user.save();
+      const resultUser = await User.findById(user._id).select('-passwordHash');
+      res.status(201).json({ success: true, message: '신규 회원이 등록되었습니다.', user: resultUser });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 11. 회원 관리: 회원 정보 및 권한 수정
+  public static async updateUser(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { name, phone, roles, profileImage, landscaperProfile } = req.body;
+
+      const updateData: any = {};
+      if (name) updateData.name = String(name).trim();
+      if (phone !== undefined) updateData.phone = String(phone).trim();
+      if (profileImage !== undefined) updateData.profileImage = profileImage;
+
+      if (Array.isArray(roles)) {
+        const validRoles = roles.filter(r => ['member', 'admin', '조경사', '관리 매니저'].includes(r));
+        if (validRoles.length > 0) {
+          updateData.roles = validRoles;
+        }
+      }
+
+      if (landscaperProfile) {
+        updateData.landscaperProfile = landscaperProfile;
+      }
+
+      const user = await User.findByIdAndUpdate(id, { $set: updateData }, { new: true }).select('-passwordHash');
+      if (!user) {
+        res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        return;
+      }
+
+      res.json({ success: true, message: '회원 정보가 수정되었습니다.', user });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 12. 회원 관리: 회원 삭제
+  public static async deleteUser(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const user = await User.findByIdAndDelete(id);
+      if (!user) {
+        res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        return;
+      }
+      res.json({ success: true, message: `${user.name} 회원이 삭제되었습니다.` });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }

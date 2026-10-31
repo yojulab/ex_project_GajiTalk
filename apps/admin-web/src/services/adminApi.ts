@@ -135,6 +135,58 @@ export const adminApi = {
       body: JSON.stringify(data)
     });
     return res.json();
+  },
+
+  // 회원 및 권한 관리 (P55-ADMIN-USERS)
+  async getUsers(params?: { search?: string; role?: string }) {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.role && params.role !== 'ALL') searchParams.append('role', params.role);
+    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    
+    try {
+      const res = await fetch(`${BASE_URL}/admin/users${queryString}`);
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: `회원 목록 조회 실패 (${err.message})`, users: [] };
+    }
+  },
+
+  async createUser(data: { email: string; name: string; password?: string; phone?: string; roles: string[] }) {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: `회원 등록 실패 (${err.message})` };
+    }
+  },
+
+  async updateUser(id: string, data: { name?: string; phone?: string; roles?: string[]; landscaperProfile?: any }) {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: `회원 정보 수정 실패 (${err.message})` };
+    }
+  },
+
+  async deleteUser(id: string) {
+    try {
+      const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: `회원 삭제 실패 (${err.message})` };
+    }
   }
 };
 

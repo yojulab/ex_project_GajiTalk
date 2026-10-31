@@ -12,5 +12,11 @@ router.put('/simulations/:id/review', AdminController.reviewSimulation);
 router.get('/species', AdminController.getSpecies);
 router.post('/species', AdminController.createOrUpdateSpecies);
 
+// 회원 관리 (P55-ADMIN-USERS)
+router.get('/users', AdminController.getUsers);
+router.post('/users', AdminController.createUser);
+router.put('/users/:id', AdminController.updateUser);
+router.delete('/users/:id', AdminController.deleteUser);
+
 export default router;
 

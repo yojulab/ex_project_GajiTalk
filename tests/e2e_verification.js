@@ -57,6 +57,19 @@ async function runE2E() {
   await mobilePage.keyboard.press('Alt+KeyI');
   await mobilePage.waitForTimeout(400);
 
+  // 1-2-1. 스마트폰 기기 프레임 모드 버튼([P01-SEC01-BTN03]) 토글 테스트
+  console.log('  2-1. [P01-SEC01-BTN03] 스마트폰 기기 프레임 모드 토글 테스트...');
+  const frameBtn = await mobilePage.$('[data-serial-id="P01-SEC01-BTN03"]');
+  if (frameBtn) {
+    await frameBtn.click();
+    await mobilePage.waitForTimeout(800);
+    await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '23_mobile_device_frame_mode.png') });
+    console.log('     ✓ 캡처 완료: 23_mobile_device_frame_mode.png (기기 프레임 모드 베젤 노출)');
+    // 다시 클릭하여 표준 모바일 뷰로 복귀
+    await mobilePage.click('[data-serial-id="P01-SEC01-BTN03"]');
+    await mobilePage.waitForTimeout(500);
+  }
+
   // 1-3. P02: 수목 촬영 및 분석 페이지 이동
   console.log('  3. P02-MOBILE-CAPTURE 촬영 & 분석 페이지...');
   const startBtn = await mobilePage.$('[data-serial-id="P01-SEC01-BTN01"]');
@@ -160,8 +173,11 @@ async function runE2E() {
 
   // 1-9. P07: [조경사 파트너 모드] 전환
   console.log('  14. P07-PARTNER-JOBBOARD [조경사 파트너 모드] 전환 및 잡보드...');
-  await mobilePage.click('text=정원주 모드', { force: true });
-  await mobilePage.waitForTimeout(1000);
+  const partnerSwitchBtn = await mobilePage.$('[data-serial-id="P01-SEC01-BTN02"], button:has-text("정원주")');
+  if (partnerSwitchBtn) {
+    await partnerSwitchBtn.click({ force: true });
+    await mobilePage.waitForTimeout(1000);
+  }
   await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '11_p07_partner_jobboard.png') });
   console.log('     ✓ 캡처 완료: 11_p07_partner_jobboard.png');
 
@@ -225,6 +241,25 @@ async function runE2E() {
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '17_p54_admin_species.png') });
   console.log('     ✓ 캡처 완료: 17_p54_admin_species.png');
+
+  // 2-5-1. P55: 회원 및 권한 관리 (신규 기능)
+  console.log('  16-1. P55-ADMIN-USERS 회원 및 단일 컬럼 array 권한 관리...');
+  await adminPage.click('text=회원 및 권한 관리', { force: true });
+  await adminPage.waitForTimeout(1200);
+  await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '24_p55_admin_users_page.png') });
+  console.log('     ✓ 캡처 완료: 24_p55_admin_users_page.png (회원 통계 및 목록)');
+
+  // 권한/수정 모달 열기 테스트
+  const editUserBtn = await adminPage.$('[data-serial-id="P55-SEC03-BTN01"]');
+  if (editUserBtn) {
+    await editUserBtn.click({ force: true });
+    await adminPage.waitForTimeout(600);
+    await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '25_p55_admin_user_roles_modal.png') });
+    console.log('     ✓ 캡처 완료: 25_p55_admin_user_roles_modal.png (권한 다중 체크박스 모달)');
+    // 취소 버튼으로 닫기
+    await adminPage.click('button:has-text("취소")', { force: true });
+    await adminPage.waitForTimeout(400);
+  }
 
   // 2-6. 관리자 인증 모달 및 권한 뱃지 검증
   console.log('  17. P50-ADMIN-AUTH 관리자 로그인/전환 모달 및 권한 array 검증...');
