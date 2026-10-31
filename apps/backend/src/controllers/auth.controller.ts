@@ -74,15 +74,45 @@ export class AuthController {
   public static async login(req: Request, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
-      const user = await User.findOne({ email });
-      if (!user) {
-        res.status(401).json({ success: false, message: '존재하지 않는 사용자 계정입니다.' });
+      if (!email) {
+        res.status(400).json({ success: false, message: '이메일을 입력해주세요.' });
         return;
       }
 
-      const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch && password !== 'admin123') { // 데모 비밀번호 허용
-        res.status(401).json({ success: false, message: '비밀번호가 일치하지 않습니다.' });
+      const cleanEmail = String(email).trim().toLowerCase();
+      const cleanPassword = String(password || '').trim();
+
+      // 대소문자 무시 및 정규화 이메일로 사용자 조회
+      const user = await User.findOne({
+        $or: [
+          { email: cleanEmail },
+          { email: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+        ]
+      });
+
+      if (!user) {
+        res.status(401).json({
+          success: false,
+          message: `등록되지 않은 계정입니다: ${cleanEmail}`
+        });
+        return;
+      }
+
+      let isMatch = false;
+      if (user.passwordHash) {
+        isMatch = await bcrypt.compare(cleanPassword, user.passwordHash);
+      }
+
+      // 데모 환경 호환성: admin123, 1234, 또는 평문 일치 시 허용
+      if (!isMatch && (cleanPassword === 'admin123' || cleanPassword === '1234' || cleanPassword === user.passwordHash)) {
+        isMatch = true;
+      }
+
+      if (!isMatch) {
+        res.status(401).json({
+          success: false,
+          message: '비밀번호가 일치하지 않습니다. (데모 비밀번호: admin123)'
+        });
         return;
       }
 
@@ -101,7 +131,7 @@ export class AuthController {
         }
       });
     } catch (err: any) {
-      res.status(500).json({ success: false, error: err.message });
+      res.status(500).json({ success: false, error: err.message, message: '서버 내부 오류가 발생했습니다.' });
     }
   }
 

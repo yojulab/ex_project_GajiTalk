@@ -53,17 +53,33 @@ export const AdminAuthModal: React.FC = () => {
     setLoading(true);
     setStatusMsg(null);
     try {
-      const success = await login(loginEmail, loginPassword);
-      if (success) {
-        setStatusMsg({ type: 'success', text: '관리자 로그인이 완료되었습니다.' });
-        setTimeout(() => {
-          closeAuthModal();
-        }, 500);
+      const result = await login(loginEmail.trim(), loginPassword.trim());
+      if (result.success) {
+        closeAuthModal();
       } else {
-        setStatusMsg({ type: 'error', text: '로그인 실패: 이메일 또는 비밀번호를 확인해주세요.' });
+        setStatusMsg({ type: 'error', text: result.message || '로그인 실패: 이메일 또는 비밀번호를 확인해주세요.' });
       }
     } catch (err: any) {
       setStatusMsg({ type: 'error', text: err.message || '로그인 중 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async (email: string, password = 'admin123') => {
+    setLoginEmail(email);
+    setLoginPassword(password);
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        closeAuthModal();
+      } else {
+        setStatusMsg({ type: 'error', text: result.message || '로그인 실패' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '오류 발생' });
     } finally {
       setLoading(false);
     }
@@ -78,19 +94,19 @@ export const AdminAuthModal: React.FC = () => {
     setLoading(true);
     setStatusMsg(null);
     try {
-      const success = await register({
-        name: regName,
-        email: regEmail,
-        password: regPassword,
+      const result = await register({
+        name: regName.trim(),
+        email: regEmail.trim(),
+        password: regPassword.trim(),
         roles: regRoles
       });
-      if (success) {
+      if (result.success) {
         setStatusMsg({ type: 'success', text: `[${regRoles.join(', ')}] 권한 관리자 계정이 생성되어 로그인되었습니다!` });
         setTimeout(() => {
           closeAuthModal();
         }, 600);
       } else {
-        setStatusMsg({ type: 'error', text: '계정 생성에 실패했습니다. 이미 등록된 이메일일 수 있습니다.' });
+        setStatusMsg({ type: 'error', text: result.message || '계정 생성에 실패했습니다.' });
       }
     } catch (err: any) {
       setStatusMsg({ type: 'error', text: err.message || '등록 중 오류가 발생했습니다.' });
@@ -165,6 +181,34 @@ export const AdminAuthModal: React.FC = () => {
 
           {tab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-[11px] font-bold text-slate-700 block mb-2">⚡ 원클릭 빠른 데모 로그인:</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('admin@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-[11px] font-bold text-left flex flex-col transition-all border border-slate-300 shadow-sm hover:border-slate-400 cursor-pointer"
+                  >
+                    <span className="text-slate-900">통합 총괄관리자</span>
+                    <span className="text-[9.5px] text-slate-500 font-mono">admin@soohyung.kr</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('manager@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-900 text-[11px] font-bold text-left flex flex-col transition-all border border-indigo-200 shadow-sm hover:border-indigo-400 cursor-pointer"
+                  >
+                    <span className="text-indigo-900">현장 운영 매니저</span>
+                    <span className="text-[9.5px] text-indigo-600 font-mono">manager@soohyung.kr</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-slate-400 text-[10px]">
+                <div className="h-px bg-slate-200 flex-1" />
+                <span>또는 직접 이메일/비밀번호 입력</span>
+                <div className="h-px bg-slate-200 flex-1" />
+              </div>
+
               <div>
                 <label className="block font-bold text-slate-700 mb-1">관리자 이메일</label>
                 <input
@@ -191,7 +235,7 @@ export const AdminAuthModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
                 <span>{loading ? '관리자 인증 중...' : '관리자 로그인'}</span>

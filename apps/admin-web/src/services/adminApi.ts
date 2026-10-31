@@ -3,31 +3,51 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 export const adminApi = {
   // 인증
   async login(data: { email: string; password?: string }) {
-    const res = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (!res.ok && !json.message) {
+        json.message = `HTTP ${res.status} 오류`;
+      }
+      return json;
+    } catch (err: any) {
+      return { success: false, message: `네트워크 연결 실패 (${err.message})` };
+    }
   },
 
   async register(data: any) {
-    const res = await fetch(`${BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, message: `네트워크 연결 실패 (${err.message})` };
+    }
   },
 
   async logout() {
-    const res = await fetch(`${BASE_URL}/auth/logout`, { method: 'POST' });
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/auth/logout`, { method: 'POST' });
+      return await res.json();
+    } catch (err: any) {
+      return { success: true };
+    }
   },
 
   async getDemoUsers() {
-    const res = await fetch(`${BASE_URL}/auth/demo-users`);
-    return res.json();
+    try {
+      const res = await fetch(`${BASE_URL}/auth/demo-users`);
+      return await res.json();
+    } catch (err: any) {
+      return { success: false, users: [] };
+    }
   },
 
   async updateUserRoles(userId: string, roles: string[]) {

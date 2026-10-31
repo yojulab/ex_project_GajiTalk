@@ -17,8 +17,8 @@ interface AdminAuthContextType {
   adminUser: AdminUser | null;
   token: string | null;
   isLoggedIn: boolean;
-  login: (email: string, password?: string) => Promise<boolean>;
-  register: (data: { email: string; password?: string; name: string; roles: UserRole[]; phone?: string }) => Promise<boolean>;
+  login: (email: string, password?: string) => Promise<{ success: boolean; message?: string }>;
+  register: (data: { email: string; password?: string; name: string; roles: UserRole[]; phone?: string }) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   switchUser: (targetUser: AdminUser) => void;
   hasRole: (role: UserRole) => boolean;
@@ -31,8 +31,8 @@ const AdminAuthContext = createContext<AdminAuthContextType>({
   adminUser: null,
   token: null,
   isLoggedIn: false,
-  login: async () => false,
-  register: async () => false,
+  login: async () => ({ success: false, message: '' }),
+  register: async () => ({ success: false, message: '' }),
   logout: () => {},
   switchUser: () => {},
   hasRole: () => false,
@@ -75,7 +75,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
-  const login = async (email: string, password = 'admin123'): Promise<boolean> => {
+  const login = async (email: string, password = 'admin123'): Promise<{ success: boolean; message?: string }> => {
     try {
       const res = await adminApi.login({ email, password });
       if (res.success && res.user) {
@@ -92,16 +92,16 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         localStorage.setItem('soohyung_admin_token', res.token);
         localStorage.setItem('soohyung_admin_user', JSON.stringify(userData));
         setIsAuthModalOpen(false);
-        return true;
+        return { success: true, message: res.message || '로그인 성공' };
       }
-      return false;
-    } catch (e) {
+      return { success: false, message: res.message || '이메일 또는 비밀번호가 일치하지 않습니다.' };
+    } catch (e: any) {
       console.error('Admin login error:', e);
-      return false;
+      return { success: false, message: e.message || '네트워크 오류가 발생했습니다.' };
     }
   };
 
-  const register = async (data: { email: string; password?: string; name: string; roles: UserRole[]; phone?: string }): Promise<boolean> => {
+  const register = async (data: { email: string; password?: string; name: string; roles: UserRole[]; phone?: string }): Promise<{ success: boolean; message?: string }> => {
     try {
       const res = await adminApi.register(data);
       if (res.success && res.user) {
@@ -118,12 +118,12 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         localStorage.setItem('soohyung_admin_token', res.token);
         localStorage.setItem('soohyung_admin_user', JSON.stringify(userData));
         setIsAuthModalOpen(false);
-        return true;
+        return { success: true, message: res.message || '계정 생성 성공' };
       }
-      return false;
-    } catch (e) {
+      return { success: false, message: res.message || '계정 등록에 실패했습니다.' };
+    } catch (e: any) {
       console.error('Admin register error:', e);
-      return false;
+      return { success: false, message: e.message || '네트워크 오류가 발생했습니다.' };
     }
   };
 

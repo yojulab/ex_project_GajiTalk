@@ -55,17 +55,33 @@ export const AuthModal: React.FC = () => {
     setLoading(true);
     setStatusMsg(null);
     try {
-      const success = await login(loginEmail, loginPassword);
-      if (success) {
-        setStatusMsg({ type: 'success', text: '성공적으로 로그인되었습니다.' });
-        setTimeout(() => {
-          closeAuthModal();
-        }, 500);
+      const result = await login(loginEmail.trim(), loginPassword.trim());
+      if (result.success) {
+        closeAuthModal();
       } else {
-        setStatusMsg({ type: 'error', text: '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.' });
+        setStatusMsg({ type: 'error', text: result.message || '로그인 실패: 이메일 또는 비밀번호를 확인해주세요.' });
       }
     } catch (err: any) {
       setStatusMsg({ type: 'error', text: err.message || '서버 통신 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async (email: string, password = 'admin123') => {
+    setLoginEmail(email);
+    setLoginPassword(password);
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        closeAuthModal();
+      } else {
+        setStatusMsg({ type: 'error', text: result.message || '로그인 실패' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '오류 발생' });
     } finally {
       setLoading(false);
     }
@@ -80,20 +96,20 @@ export const AuthModal: React.FC = () => {
     setLoading(true);
     setStatusMsg(null);
     try {
-      const success = await register({
-        name: regName,
-        email: regEmail,
-        password: regPassword,
-        phone: regPhone,
+      const result = await register({
+        name: regName.trim(),
+        email: regEmail.trim(),
+        password: regPassword.trim(),
+        phone: regPhone.trim(),
         roles: regRoles
       });
-      if (success) {
+      if (result.success) {
         setStatusMsg({ type: 'success', text: `[${regRoles.join(', ')}] 권한으로 가입되어 자동 로그인되었습니다!` });
         setTimeout(() => {
           closeAuthModal();
         }, 600);
       } else {
-        setStatusMsg({ type: 'error', text: '회원가입에 실패했습니다. 이미 사용 중인 이메일일 수 있습니다.' });
+        setStatusMsg({ type: 'error', text: result.message || '회원가입에 실패했습니다.' });
       }
     } catch (err: any) {
       setStatusMsg({ type: 'error', text: err.message || '서버 통신 오류가 발생했습니다.' });
@@ -171,6 +187,50 @@ export const AuthModal: React.FC = () => {
           {/* [1] 로그인 탭 */}
           {tab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+              <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+                <span className="text-[11px] font-bold text-emerald-900 block mb-1.5">⚡ 원클릭 빠른 데모 로그인:</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('garden1@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-emerald-100 text-emerald-900 text-[11px] font-bold text-left flex flex-col transition-all border border-emerald-300 shadow-sm cursor-pointer"
+                  >
+                    <span>정원주 김정원</span>
+                    <span className="text-[9.5px] text-emerald-600 font-mono">garden1@soohyung.kr</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('master_choi@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-indigo-100 text-indigo-900 text-[11px] font-bold text-left flex flex-col transition-all border border-indigo-300 shadow-sm cursor-pointer"
+                  >
+                    <span>최송석 조경명인</span>
+                    <span className="text-[9.5px] text-indigo-600 font-mono">master_choi@soohyung.kr</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('tree_doc_han@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-amber-100 text-amber-900 text-[11px] font-bold text-left flex flex-col transition-all border border-amber-300 shadow-sm cursor-pointer"
+                  >
+                    <span>한수목 나무의사</span>
+                    <span className="text-[9.5px] text-amber-600 font-mono">tree_doc_han@soohyung.kr</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin('admin@soohyung.kr')}
+                    className="p-2 rounded-xl bg-white hover:bg-slate-200 text-slate-900 text-[11px] font-bold text-left flex flex-col transition-all border border-slate-300 shadow-sm cursor-pointer"
+                  >
+                    <span>통합 총괄관리자</span>
+                    <span className="text-[9.5px] text-slate-600 font-mono">admin@soohyung.kr</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-slate-400 text-[10px]">
+                <div className="h-px bg-slate-200 flex-1" />
+                <span>또는 직접 이메일/비밀번호 입력</span>
+                <div className="h-px bg-slate-200 flex-1" />
+              </div>
+
               <div>
                 <label className="block font-bold text-slate-700 mb-1">이메일 계정</label>
                 <input
@@ -199,7 +259,7 @@ export const AuthModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 active:scale-98 text-white font-extrabold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 active:scale-98 text-white font-extrabold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <LogIn className="w-4 h-4" />
                 <span>{loading ? '로그인 처리 중...' : '로그인하기'}</span>
