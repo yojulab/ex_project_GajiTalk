@@ -21,8 +21,13 @@ export const AdminAuthModal: React.FC = () => {
   // 데모 유저 목록
   const [demoUsers, setDemoUsers] = useState<any[]>([]);
 
+  // 상태 메시지 및 로딩
+  const [loading, setLoading] = useState<boolean>(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     if (isAuthModalOpen) {
+      setStatusMsg(null);
       adminApi.getDemoUsers().then(res => {
         if (res.success) setDemoUsers(res.users);
       }).catch(console.error);
@@ -34,7 +39,7 @@ export const AdminAuthModal: React.FC = () => {
   const handleToggleRole = (role: UserRole) => {
     if (regRoles.includes(role)) {
       if (regRoles.length === 1) {
-        alert('최소 1개 이상의 권한이 선택되어야 합니다.');
+        setStatusMsg({ type: 'error', text: '최소 1개 이상의 권한이 선택되어야 합니다.' });
         return;
       }
       setRegRoles(regRoles.filter(r => r !== role));
@@ -45,30 +50,52 @@ export const AdminAuthModal: React.FC = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(loginEmail, loginPassword);
-    if (success) {
-      alert('관리자 로그인이 완료되었습니다.');
-    } else {
-      alert('로그인 실패: 이메일 또는 비밀번호를 확인해주세요.');
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const success = await login(loginEmail, loginPassword);
+      if (success) {
+        setStatusMsg({ type: 'success', text: '관리자 로그인이 완료되었습니다.' });
+        setTimeout(() => {
+          closeAuthModal();
+        }, 500);
+      } else {
+        setStatusMsg({ type: 'error', text: '로그인 실패: 이메일 또는 비밀번호를 확인해주세요.' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '로그인 중 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName || !regEmail) {
-      alert('이름과 이메일을 입력해주세요.');
+      setStatusMsg({ type: 'error', text: '이름과 이메일을 입력해주세요.' });
       return;
     }
-    const success = await register({
-      name: regName,
-      email: regEmail,
-      password: regPassword,
-      roles: regRoles
-    });
-    if (success) {
-      alert(`[${regRoles.join(', ')}] 권한의 관리자 계정이 생성되어 로그인되었습니다!`);
-    } else {
-      alert('계정 생성에 실패했습니다.');
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const success = await register({
+        name: regName,
+        email: regEmail,
+        password: regPassword,
+        roles: regRoles
+      });
+      if (success) {
+        setStatusMsg({ type: 'success', text: `[${regRoles.join(', ')}] 권한 관리자 계정이 생성되어 로그인되었습니다!` });
+        setTimeout(() => {
+          closeAuthModal();
+        }, 600);
+      } else {
+        setStatusMsg({ type: 'error', text: '계정 생성에 실패했습니다. 이미 등록된 이메일일 수 있습니다.' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '등록 중 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,6 +146,23 @@ export const AdminAuthModal: React.FC = () => {
         </div>
 
         <div className="p-5 overflow-y-auto space-y-4 text-xs">
+          {statusMsg && (
+            <div
+              className={`p-3 rounded-xl border flex items-center gap-2 text-xs font-semibold ${
+                statusMsg.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border-rose-200'
+              }`}
+            >
+              {statusMsg.type === 'success' ? (
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <X className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span>{statusMsg.text}</span>
+            </div>
+          )}
+
           {tab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
               <div>
@@ -146,9 +190,11 @@ export const AdminAuthModal: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md text-xs"
+                disabled={loading}
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5"
               >
-                관리자 로그인
+                <LogIn className="w-4 h-4" />
+                <span>{loading ? '관리자 인증 중...' : '관리자 로그인'}</span>
               </button>
             </form>
           )}

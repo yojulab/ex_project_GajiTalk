@@ -23,8 +23,13 @@ export const AuthModal: React.FC = () => {
   // 데모 유저 목록
   const [demoUsers, setDemoUsers] = useState<any[]>([]);
 
+  // 상태 메시지 및 로딩
+  const [loading, setLoading] = useState<boolean>(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     if (isAuthModalOpen) {
+      setStatusMsg(null);
       api.getDemoUsers().then(res => {
         if (res.success) setDemoUsers(res.users);
       }).catch(console.error);
@@ -36,7 +41,7 @@ export const AuthModal: React.FC = () => {
   const handleToggleRole = (role: UserRole) => {
     if (regRoles.includes(role)) {
       if (regRoles.length === 1) {
-        alert('최소 1개 이상의 권한이 선택되어야 합니다.');
+        setStatusMsg({ type: 'error', text: '최소 1개 이상의 권한이 선택되어야 합니다.' });
         return;
       }
       setRegRoles(regRoles.filter(r => r !== role));
@@ -47,31 +52,53 @@ export const AuthModal: React.FC = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(loginEmail, loginPassword);
-    if (success) {
-      alert('성공적으로 로그인되었습니다.');
-    } else {
-      alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const success = await login(loginEmail, loginPassword);
+      if (success) {
+        setStatusMsg({ type: 'success', text: '성공적으로 로그인되었습니다.' });
+        setTimeout(() => {
+          closeAuthModal();
+        }, 500);
+      } else {
+        setStatusMsg({ type: 'error', text: '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '서버 통신 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName || !regEmail) {
-      alert('이름과 이메일을 입력해주세요.');
+      setStatusMsg({ type: 'error', text: '이름과 이메일을 입력해주세요.' });
       return;
     }
-    const success = await register({
-      name: regName,
-      email: regEmail,
-      password: regPassword,
-      phone: regPhone,
-      roles: regRoles
-    });
-    if (success) {
-      alert(`[${regRoles.join(', ')}] 권한으로 회원가입이 완료되어 자동 로그인되었습니다!`);
-    } else {
-      alert('회원가입에 실패했습니다.');
+    setLoading(true);
+    setStatusMsg(null);
+    try {
+      const success = await register({
+        name: regName,
+        email: regEmail,
+        password: regPassword,
+        phone: regPhone,
+        roles: regRoles
+      });
+      if (success) {
+        setStatusMsg({ type: 'success', text: `[${regRoles.join(', ')}] 권한으로 가입되어 자동 로그인되었습니다!` });
+        setTimeout(() => {
+          closeAuthModal();
+        }, 600);
+      } else {
+        setStatusMsg({ type: 'error', text: '회원가입에 실패했습니다. 이미 사용 중인 이메일일 수 있습니다.' });
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: 'error', text: err.message || '서버 통신 오류가 발생했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,6 +151,23 @@ export const AuthModal: React.FC = () => {
 
         {/* 본문 컨텐츠 */}
         <div className="p-5 overflow-y-auto space-y-4 text-xs">
+          {statusMsg && (
+            <div
+              className={`p-3 rounded-xl border flex items-center gap-2 text-xs font-semibold ${
+                statusMsg.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border-rose-200'
+              }`}
+            >
+              {statusMsg.type === 'success' ? (
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <X className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span>{statusMsg.text}</span>
+            </div>
+          )}
+
           {/* [1] 로그인 탭 */}
           {tab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
@@ -154,10 +198,11 @@ export const AuthModal: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-extrabold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5"
+                disabled={loading}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 active:scale-98 text-white font-extrabold rounded-xl shadow-md text-xs transition-all flex items-center justify-center gap-1.5"
               >
                 <LogIn className="w-4 h-4" />
-                <span>로그인하기</span>
+                <span>{loading ? '로그인 처리 중...' : '로그인하기'}</span>
               </button>
             </form>
           )}
