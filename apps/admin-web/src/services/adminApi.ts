@@ -1,4 +1,20 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// 클라이언트 브라우저 환경에 맞는 최적의 API Base URL 결정
+const resolveApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  // 상대경로 /api 지정 시 즉시 반환 (가장 안전한 리버스 프록시)
+  if (!envUrl || envUrl === '/api') return '/api';
+
+  if (typeof window !== 'undefined') {
+    // 만약 localhost가 하드코딩되어 있는데 사용자가 다른 IP나 호스트로 접속한 경우
+    // 브라우저 머신에 30020 포트가 없으므로 무조건 상대경로 /api로 통신해야 Failed to fetch 방지
+    if (envUrl.includes('localhost') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return '/api';
+    }
+  }
+  return envUrl;
+};
+
+const BASE_URL = resolveApiBaseUrl();
 
 export const adminApi = {
   // 인증

@@ -8,8 +8,9 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:30020',
-        changeOrigin: true
+        target: 'http://127.0.0.1:30020',
+        changeOrigin: true,
+        secure: false
       }
     }
   },
@@ -18,8 +19,9 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:30020',
-        changeOrigin: true
+        target: 'http://127.0.0.1:30020',
+        changeOrigin: true,
+        secure: false
       }
     }
   }
