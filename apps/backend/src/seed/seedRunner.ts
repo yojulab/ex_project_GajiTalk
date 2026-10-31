@@ -29,7 +29,7 @@ export const runSeed = async () => {
   // 3. 비밀번호 공통 해싱
   const defaultPasswordHash = await bcrypt.hash('admin123', 10);
 
-  // 4. 회원 데이터 생성 (정원주 3명, 조경사 4명, 관리자 1명)
+  // 4. 회원 데이터 생성 (정원주, 조경사, 관리자, 관리 매니저)
   const users = await User.insertMany([
     // [관리자]
     {
@@ -37,8 +37,17 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '통합 총괄관리자',
       phone: '010-1234-5678',
-      role: 'ADMIN',
+      roles: ['admin', '관리 매니저'],
       profileImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
+    },
+    // [관리 매니저]
+    {
+      email: 'manager@soohyung.kr',
+      passwordHash: defaultPasswordHash,
+      name: '현장 운영 매니저',
+      phone: '010-1111-9999',
+      roles: ['관리 매니저'],
+      profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'
     },
     // [정원주 1: 양평 전원주택 김정원]
     {
@@ -46,7 +55,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '김정원(양평)',
       phone: '010-9876-5432',
-      role: 'GARDEN_OWNER',
+      roles: ['member'],
       profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80'
     },
     // [정원주 2: 파주 카페 이가든]
@@ -55,7 +64,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '이가든(파주 카페)',
       phone: '010-2222-3333',
-      role: 'GARDEN_OWNER',
+      roles: ['member'],
       profileImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80'
     },
     // [정원주 3: 성북동 박자연]
@@ -64,7 +73,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '박자연(성북동)',
       phone: '010-3333-4444',
-      role: 'GARDEN_OWNER',
+      roles: ['member'],
       profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80'
     },
     // [조경사 1: 최송석 소나무 명인 (인증 명인)]
@@ -73,7 +82,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '최송석 명인',
       phone: '010-8888-1111',
-      role: 'LANDSCAPER',
+      roles: ['조경사', 'member'],
       profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
       landscaperProfile: {
         companyName: '송석 조경 명인 연구소',
@@ -116,7 +125,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '한수목 원장',
       phone: '010-7777-2222',
-      role: 'LANDSCAPER',
+      roles: ['조경사', 'member'],
       profileImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
       landscaperProfile: {
         companyName: '수목보호 나무병원',
@@ -151,7 +160,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '정푸름 대표',
       phone: '010-5555-3333',
-      role: 'LANDSCAPER',
+      roles: ['조경사', 'member'],
       profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
       landscaperProfile: {
         companyName: '푸름 가든 스튜디오',
@@ -186,7 +195,7 @@ export const runSeed = async () => {
       passwordHash: defaultPasswordHash,
       name: '박새순',
       phone: '010-4444-6666',
-      role: 'LANDSCAPER',
+      roles: ['조경사'],
       profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
       landscaperProfile: {
         companyName: '새순 조경디자인',
@@ -209,7 +218,7 @@ export const runSeed = async () => {
   ]);
   console.log(`[Seed] Inserted ${users.length} users.`);
 
-  const adminUser = users.find(u => u.role === 'ADMIN')!;
+  const adminUser = users.find(u => (u.roles as any).includes('admin'))!;
   const ownerKim = users.find(u => u.email === 'garden1@soohyung.kr')!;
   const ownerLee = users.find(u => u.email === 'garden2@soohyung.kr')!;
   const ownerPark = users.find(u => u.email === 'garden3@soohyung.kr')!;

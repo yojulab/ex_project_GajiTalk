@@ -34,7 +34,7 @@ export class GardenController {
 
       let ownerId = (req as any).user?.id || req.body.ownerId;
       if (!ownerId) {
-        const defaultOwner = await User.findOne({ role: 'GARDEN_OWNER' });
+        const defaultOwner = await User.findOne({ roles: 'member' });
         ownerId = defaultOwner?._id;
       }
 

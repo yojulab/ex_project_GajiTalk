@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { UiInspectProvider, InspectBadge } from './context/UiInspectContext';
+import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
+import { AdminAuthModal } from './components/auth/AdminAuthModal';
 import { DashboardPage } from './pages/DashboardPage';
 import { MatchingManagePage } from './pages/MatchingManagePage';
 import { LandscaperVerifyPage } from './pages/LandscaperVerifyPage';
@@ -13,11 +15,15 @@ import {
   BookOpen,
   TreePine,
   ExternalLink,
-  ShieldAlert
+  Shield,
+  LogIn,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
-export const App: React.FC = () => {
+const AdminMainContent: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string>('dashboard');
+  const { adminUser, isLoggedIn, logout, openAuthModal } = useAdminAuth();
 
   const getPageMeta = () => {
     switch (activeMenu) {
@@ -86,27 +92,29 @@ export const App: React.FC = () => {
             </nav>
           </div>
 
-          {/* 하단 모바일 앱 바로가기 */}
-          <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60 text-xs space-y-2">
-            <div className="flex items-center justify-between text-slate-400 text-[11px]">
-              <span>정원주 모바일 앱</span>
-              <span className="text-emerald-400 font-bold">:30018</span>
+          {/* 하단 모바일 앱 바로가기 및 관리자 프로필 */}
+          <div className="space-y-2">
+            <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60 text-xs space-y-2">
+              <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                <span>정원주 모바일 앱</span>
+                <span className="text-emerald-400 font-bold">:30018</span>
+              </div>
+              <a
+                href="http://localhost:30018"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1.5 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-colors"
+              >
+                <span>모바일 앱 열기</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
-            <a
-              href="http://localhost:30018"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-colors"
-            >
-              <span>모바일 앱 열기</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
           </div>
         </aside>
 
         {/* 본문 메인 콘텐츠 영역 */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* 상단 얇은 헤더 */}
+          {/* 상단 헤더 (로그인 정보 & 권한 뱃지) */}
           <header className="bg-white border-b border-slate-200 px-8 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <span>수형 관리 시스템</span>
@@ -117,16 +125,47 @@ export const App: React.FC = () => {
               </span>
             </div>
 
+            {/* 우측 관리자 프로필 & 로그인/로그아웃 */}
             <div className="flex items-center gap-3 text-xs">
-              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full font-bold text-[11px]">
-                ● 시스템 정상 가동중 (:30019)
-              </span>
-              <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
-                <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
-                  관
+              {isLoggedIn && adminUser ? (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={openAuthModal}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-left"
+                    title="계정 정보 및 전환"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                      {adminUser.name[0]}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-900 text-xs">{adminUser.name}</div>
+                      <div className="flex gap-1 mt-0.5">
+                        {adminUser.roles?.map(r => (
+                          <span key={r} className="px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-indigo-100 text-indigo-800 font-mono">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:text-rose-600 hover:bg-rose-50 text-xs font-bold transition-all"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>로그아웃</span>
+                  </button>
                 </div>
-                <span className="font-bold text-slate-800">최고 관리자</span>
-              </div>
+              ) : (
+                <button
+                  onClick={openAuthModal}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>관리자 로그인</span>
+                </button>
+              )}
             </div>
           </header>
 
@@ -138,9 +177,20 @@ export const App: React.FC = () => {
             {activeMenu === 'species' && <SpeciesManagePage />}
           </main>
         </div>
+
+        {/* 관리자 인증 모달 */}
+        <AdminAuthModal />
       </div>
     </UiInspectProvider>
   );
 };
-export default App;
 
+export const App: React.FC = () => {
+  return (
+    <AdminAuthProvider>
+      <AdminMainContent />
+    </AdminAuthProvider>
+  );
+};
+
+export default App;

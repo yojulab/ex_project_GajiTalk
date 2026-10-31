@@ -13,8 +13,8 @@ export class AdminController {
         PruningSimulation.countDocuments(),
         MatchingRequest.countDocuments(),
         MatchingRequest.countDocuments({ status: { $in: ['MATCHED', 'IN_PROGRESS', 'COMPLETED'] } }),
-        User.countDocuments({ role: 'LANDSCAPER' }),
-        User.countDocuments({ role: 'LANDSCAPER', 'landscaperProfile.verificationStatus': 'VERIFIED' })
+        User.countDocuments({ roles: '조경사' }),
+        User.countDocuments({ roles: '조경사', 'landscaperProfile.verificationStatus': 'VERIFIED' })
       ]);
 
       const matchingRate = totalRequests > 0 ? Math.round((matchedRequests / totalRequests) * 100) : 0;
@@ -63,7 +63,7 @@ export class AdminController {
   public static async getLandscapers(req: Request, res: Response): Promise<void> {
     try {
       const { status } = req.query;
-      const query: any = { role: 'LANDSCAPER' };
+      const query: any = { roles: '조경사' };
       if (status) {
         query['landscaperProfile.verificationStatus'] = status;
       }
@@ -80,7 +80,7 @@ export class AdminController {
       const { id } = req.params;
       const { status, isMasterBadge } = req.body;
 
-      const user = await User.findOne({ _id: id, role: 'LANDSCAPER' });
+      const user = await User.findOne({ _id: id, roles: '조경사' });
       if (!user || !user.landscaperProfile) {
         res.status(404).json({ success: false, message: '조경사를 찾을 수 없습니다.' });
         return;

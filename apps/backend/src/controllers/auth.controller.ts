@@ -1,30 +1,48 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User.model';
+import { User, UserRole } from '../models/User.model';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'soohyung_master_secret_key_2026_gajitalk_jwt';
 
 export class AuthController {
+  // 회원가입
   public static async register(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password, name, phone, role, landscaperProfile } = req.body;
+      const { email, password, name, phone, roles, profileImage, landscaperProfile } = req.body;
       const existing = await User.findOne({ email });
       if (existing) {
         res.status(400).json({ success: false, message: '이미 가입된 이메일 주소입니다.' });
         return;
       }
 
+      // roles는 array로 관리: ['member', 'admin', '조경사', '관리 매니저']
+      let assignedRoles: UserRole[] = ['member'];
+      if (Array.isArray(roles) && roles.length > 0) {
+        assignedRoles = roles.filter(r => ['member', 'admin', '조경사', '관리 매니저'].includes(r));
+      } else if (typeof roles === 'string') {
+        if (roles === 'LANDSCAPER' || roles === '조경사') assignedRoles = ['조경사', 'member'];
+        else if (roles === 'ADMIN' || roles === 'admin') assignedRoles = ['admin', '관리 매니저'];
+        else if (roles === '관리 매니저') assignedRoles = ['관리 매니저'];
+        else assignedRoles = ['member'];
+      }
+
       const passwordHash = await bcrypt.hash(password || 'admin123', 10);
+      const isLandscaper = assignedRoles.includes('조경사');
+
       const user = new User({
         email,
         passwordHash,
         name,
         phone,
-        role: role || 'GARDEN_OWNER',
-        landscaperProfile: role === 'LANDSCAPER' ? (landscaperProfile || {
+        roles: assignedRoles,
+        profileImage: profileImage || '',
+        landscaperProfile: isLandscaper ? (landscaperProfile || {
           companyName: name,
           experienceYears: 1,
+          certifications: [],
+          specialties: ['수목전지'],
+          serviceAreas: ['전국'],
           verificationStatus: 'PENDING',
           isMasterBadge: false,
           portfolios: []
@@ -32,7 +50,7 @@ export class AuthController {
       });
 
       await user.save();
-      const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: user._id, roles: user.roles, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
       res.status(201).json({
         success: true,
@@ -42,8 +60,9 @@ export class AuthController {
           id: user._id,
           email: user.email,
           name: user.name,
-          role: user.role,
-          landscaperProfile: user.landscaperProfile
+          roles: user.roles,
+          landscaperProfile: user.landscaperProfile,
+          profileImage: user.profileImage
         }
       });
     } catch (err: any) {
@@ -51,6 +70,7 @@ export class AuthController {
     }
   }
 
+  // 로그인
   public static async login(req: Request, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
@@ -61,12 +81,12 @@ export class AuthController {
       }
 
       const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch && password !== 'admin123') { // 데모 편의 지원
+      if (!isMatch && password !== 'admin123') { // 데모 비밀번호 허용
         res.status(401).json({ success: false, message: '비밀번호가 일치하지 않습니다.' });
         return;
       }
 
-      const token = jwt.sign({ id: user._id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ id: user._id, roles: user.roles, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
       res.json({
         success: true,
         message: '로그인 성공',
@@ -75,7 +95,7 @@ export class AuthController {
           id: user._id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          roles: user.roles,
           landscaperProfile: user.landscaperProfile,
           profileImage: user.profileImage
         }
@@ -85,20 +105,73 @@ export class AuthController {
     }
   }
 
+  // 로그아웃
+  public static async logout(req: Request, res: Response): Promise<void> {
+    // JWT 기반 무상태 인증이므로 클라이언트측 토큰 삭제 및 성공 응답
+    res.json({
+      success: true,
+      message: '로그아웃 되었습니다.'
+    });
+  }
+
+  // 현재 사용자 정보 조회
   public static async me(req: Request, res: Response): Promise<void> {
     try {
-      const userId = (req as any).user?.id || req.query.userId;
+      let userId = (req as any).user?.id || req.query.userId;
+      
+      // Authorization 헤더가 있으면 JWT 토큰 파싱
+      const authHeader = req.headers.authorization;
+      if (!userId && authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET) as any;
+          userId = decoded.id;
+        } catch (jwtErr) {
+          // 토큰 만료 또는 유효하지 않음
+        }
+      }
+
       if (!userId) {
-        // 데모 환경: 첫 번째 정원주 기본 반환
-        const defaultUser = await User.findOne({ role: 'GARDEN_OWNER' }).select('-passwordHash');
+        // 데모 환경: 첫 번째 member 계정 기본 반환
+        const defaultUser = await User.findOne({ roles: 'member' }).select('-passwordHash');
         res.json({ success: true, user: defaultUser });
         return;
       }
       const user = await User.findById(userId).select('-passwordHash');
+      if (!user) {
+        res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        return;
+      }
       res.json({ success: true, user });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }
   }
-}
 
+  // 데모 계정 목록 조회 (원클릭 전환용)
+  public static async getDemoUsers(req: Request, res: Response): Promise<void> {
+    try {
+      const users = await User.find().select('-passwordHash').sort({ createdAt: 1 });
+      res.json({ success: true, users });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  // 권한 갱신 (관리자용)
+  public static async updateUserRoles(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { roles } = req.body;
+      if (!Array.isArray(roles)) {
+        res.status(400).json({ success: false, message: 'roles는 배열이어야 합니다.' });
+        return;
+      }
+      const validRoles = roles.filter(r => ['member', 'admin', '조경사', '관리 매니저'].includes(r));
+      const user = await User.findByIdAndUpdate(id, { $set: { roles: validRoles } }, { new: true }).select('-passwordHash');
+      res.json({ success: true, message: '회원 권한이 갱신되었습니다.', user });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+}

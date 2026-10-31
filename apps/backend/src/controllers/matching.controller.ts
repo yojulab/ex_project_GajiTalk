@@ -10,7 +10,7 @@ export class MatchingController {
     try {
       const { specialty, isMaster, area } = req.query;
       const query: any = {
-        role: 'LANDSCAPER',
+        roles: '조경사',
         'landscaperProfile.verificationStatus': 'VERIFIED'
       };
 
@@ -35,7 +35,7 @@ export class MatchingController {
   public static async getLandscaperById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const landscaper = await User.findOne({ _id: id, role: 'LANDSCAPER' }).select('-passwordHash');
+      const landscaper = await User.findOne({ _id: id, roles: '조경사' }).select('-passwordHash');
       if (!landscaper) {
         res.status(404).json({ success: false, message: '조경사를 찾을 수 없습니다.' });
         return;
@@ -63,7 +63,7 @@ export class MatchingController {
 
       let gardenOwnerId = customOwnerId || (req as any).user?.id;
       if (!gardenOwnerId) {
-        const defaultOwner = await User.findOne({ role: 'GARDEN_OWNER' });
+        const defaultOwner = await User.findOne({ roles: 'member' });
         gardenOwnerId = defaultOwner?._id;
       }
 
@@ -160,7 +160,7 @@ export class MatchingController {
 
       let landscaperId = customLandscaperId;
       if (!landscaperId) {
-        const defaultLandscaper = await User.findOne({ role: 'LANDSCAPER', 'landscaperProfile.isMasterBadge': true });
+        const defaultLandscaper = await User.findOne({ roles: '조경사', 'landscaperProfile.isMasterBadge': true });
         landscaperId = defaultLandscaper?._id;
       }
 

@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type UserRole = 'member' | 'admin' | '조경사' | '관리 매니저';
+
 export interface IPortfolio {
   title: string;
   treeSpecies: string;
@@ -32,7 +34,7 @@ export interface IUser extends Document {
   passwordHash: string;
   name: string;
   phone: string;
-  role: 'GARDEN_OWNER' | 'LANDSCAPER' | 'ADMIN';
+  roles: UserRole[]; // 회원 권한 array 관리 (member, admin, 조경사, 관리 매니저)
   profileImage?: string;
   landscaperProfile?: ILandscaperProfile;
   createdAt: Date;
@@ -75,10 +77,11 @@ const UserSchema = new Schema<IUser>({
   passwordHash: { type: String, required: true },
   name: { type: String, required: true },
   phone: { type: String, default: '' },
-  role: {
-    type: String,
-    enum: ['GARDEN_OWNER', 'LANDSCAPER', 'ADMIN'],
-    default: 'GARDEN_OWNER'
+  roles: {
+    type: [String],
+    enum: ['member', 'admin', '조경사', '관리 매니저'],
+    default: ['member'],
+    index: true
   },
   profileImage: { type: String, default: '' },
   landscaperProfile: { type: LandscaperProfileSchema, default: null }
@@ -89,4 +92,3 @@ const UserSchema = new Schema<IUser>({
 UserSchema.index({ 'landscaperProfile.baseLocation': '2dsphere' });
 
 export const User = mongoose.model<IUser>('User', UserSchema);
-

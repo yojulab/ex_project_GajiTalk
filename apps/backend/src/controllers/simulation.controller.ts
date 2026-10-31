@@ -21,7 +21,7 @@ export class SimulationController {
         targetUser = await User.findById(customUserId);
       }
       if (!targetUser) {
-        targetUser = await User.findOne({ role: 'GARDEN_OWNER' });
+        targetUser = await User.findOne({ roles: 'member' });
       }
 
       const activeImageUrl = imageUrl || 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=1000&q=85';

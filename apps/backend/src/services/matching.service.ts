@@ -11,7 +11,7 @@ export class MatchingService {
     const [lng, lat] = coords;
     try {
       const landscapers = await User.find({
-        role: 'LANDSCAPER',
+        roles: '조경사',
         'landscaperProfile.verificationStatus': 'VERIFIED',
         'landscaperProfile.baseLocation': {
           $near: {
@@ -24,7 +24,7 @@ export class MatchingService {
     } catch (err) {
       // 2dsphere 인덱스 쿼리 폴백 (전체 검증된 조경사 반환)
       return await User.find({
-        role: 'LANDSCAPER',
+        roles: '조경사',
         'landscaperProfile.verificationStatus': 'VERIFIED'
       }).select('-passwordHash');
     }

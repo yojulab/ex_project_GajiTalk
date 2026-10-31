@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { UiInspectProvider, InspectBadge } from './context/UiInspectContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthModal } from './components/auth/AuthModal';
 import { HomePage } from './pages/HomePage';
 import { CaptureAndAnalyzePage } from './pages/CaptureAndAnalyzePage';
 import { SimulationResultPage } from './pages/SimulationResultPage';
@@ -14,19 +16,40 @@ import {
   Calendar,
   Home,
   Briefcase,
-  Layers,
-  ArrowRightLeft
+  ArrowRightLeft,
+  LogIn,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
-export const App: React.FC = () => {
+const MainContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [isPartnerMode, setIsPartnerMode] = useState<boolean>(false);
   const [navParams, setNavParams] = useState<any>(null);
+  const { user, isLoggedIn, logout, openAuthModal, hasRole } = useAuth();
 
   const handleNavigate = (page: string, params?: any) => {
     setActiveTab(page);
     setNavParams(params || null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleTogglePartnerMode = () => {
+    if (!isPartnerMode) {
+      // 조경사 권한 체크 (roles: ['조경사'])
+      if (!hasRole('조경사')) {
+        const confirmSwitch = confirm('조경사 파트너 모드는 [조경사] 권한이 필요합니다. 조경사 권한이 있는 계정으로 전환하거나 권한을 추가하시겠습니까?');
+        if (confirmSwitch) {
+          openAuthModal();
+        }
+        return;
+      }
+      setIsPartnerMode(true);
+      setActiveTab('partner');
+    } else {
+      setIsPartnerMode(false);
+      setActiveTab('home');
+    }
   };
 
   const getPageMeta = () => {
@@ -68,23 +91,59 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 정원주 ⇄ 조경사 모드 전환 바 */}
-            <div className="relative">
-              <InspectBadge serialId="P01-SEC01-BTN02" itemName="정원주/조경사 모드 전환 스위치" />
-              <button
-                onClick={() => {
-                  setIsPartnerMode(!isPartnerMode);
-                  setActiveTab(isPartnerMode ? 'home' : 'partner');
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${
-                  isPartnerMode
-                    ? 'bg-amber-500 text-white ring-2 ring-amber-300'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5" />
-                <span>{isPartnerMode ? '조경사 파트너' : '정원주 모드'}</span>
-              </button>
+            {/* 우측: 사용자 정보 & 모드 전환 */}
+            <div className="flex items-center gap-2">
+              {/* 정원주 ⇄ 조경사 모드 전환 바 */}
+              <div className="relative">
+                <InspectBadge serialId="P01-SEC01-BTN02" itemName="정원주/조경사 모드 전환 스위치" />
+                <button
+                  onClick={handleTogglePartnerMode}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold transition-all shadow-sm ${
+                    isPartnerMode
+                      ? 'bg-amber-500 text-white ring-2 ring-amber-300'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  <ArrowRightLeft className="w-3.5 h-3.5" />
+                  <span>{isPartnerMode ? '조경사 모드' : '정원주 모드'}</span>
+                </button>
+              </div>
+
+              {/* 로그인/로그아웃 버튼 */}
+              {isLoggedIn && user ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={openAuthModal}
+                    className="flex items-center gap-1 pl-1 pr-2 py-1 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-[10px] font-bold text-slate-700"
+                    title="계정 정보 및 전환"
+                  >
+                    <img
+                      src={user.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
+                      alt={user.name}
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                    <span className="max-w-[48px] truncate">{user.name}</span>
+                    <span className="px-1 py-0.2 bg-emerald-100 text-emerald-800 rounded text-[8.5px] font-mono">
+                      {user.roles?.[0]}
+                    </span>
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                    title="로그아웃"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={openAuthModal}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-full text-xs font-bold shadow-sm"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>로그인</span>
+                </button>
+              )}
             </div>
           </header>
 
@@ -109,7 +168,7 @@ export const App: React.FC = () => {
             )}
           </main>
 
-          {/* 하단 네비게이션 바 */}
+          {/* 하단 네비게이션 바 (z-50 최상위) */}
           <nav className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-white/95 backdrop-blur border-t border-slate-200 px-2 py-2 flex justify-around items-center">
             {isPartnerMode ? (
               <>
@@ -180,10 +239,21 @@ export const App: React.FC = () => {
               </>
             )}
           </nav>
+
+          {/* 인증 모달 */}
+          <AuthModal />
         </div>
       </div>
     </UiInspectProvider>
   );
 };
-export default App;
 
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <MainContent />
+    </AuthProvider>
+  );
+};
+
+export default App;

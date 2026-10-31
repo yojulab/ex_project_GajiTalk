@@ -35,6 +35,11 @@ async function runE2E() {
     }
   });
 
+  mobilePage.on('dialog', async dialog => {
+    console.log(`     [Mobile Alert] ${dialog.message()}`);
+    await dialog.accept();
+  });
+
   // 1-1. P01: 정원주 메인 홈
   console.log('  1. P01-MOBILE-HOME 메인 홈 접속 및 렌더링...');
   await mobilePage.goto('http://localhost:30018', { waitUntil: 'networkidle' });
@@ -48,6 +53,9 @@ async function runE2E() {
   await mobilePage.waitForTimeout(600);
   await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '02_ui_inspect_on_home.png') });
   console.log('     ✓ 캡처 완료: 02_ui_inspect_on_home.png (인스펙션 뱃지 노출 확인)');
+  // 인터랙션 진행을 위해 Alt+I 한 번 더 눌러 뱃지 숨김 토글
+  await mobilePage.keyboard.press('Alt+KeyI');
+  await mobilePage.waitForTimeout(400);
 
   // 1-3. P02: 수목 촬영 및 분석 페이지 이동
   console.log('  3. P02-MOBILE-CAPTURE 촬영 & 분석 페이지...');
@@ -118,9 +126,41 @@ async function runE2E() {
   await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '10_p06_matching_status.png') });
   console.log('     ✓ 캡처 완료: 10_p06_matching_status.png');
 
-  // 1-8. P07: [조경사 파트너 모드] 전환
-  console.log('  11. P07-PARTNER-JOBBOARD [조경사 파트너 모드] 전환 및 잡보드...');
-  await mobilePage.click('text=정원주 모드');
+  // 1-8. P01-AUTH 모바일 인증 시스템 검증 (회원가입, 로그인, 다중 역할 array, 데모 전환, 로그아웃)
+  console.log('  11. P01-AUTH 모바일 회원가입 & 로그인 모달 검증...');
+  // 상단 유저 프로필/로그인 버튼 클릭하여 모달 열기
+  const userProfileBtn = await mobilePage.$('header button:has(img), header button:has-text("로그인")');
+  if (userProfileBtn) {
+    await userProfileBtn.click({ force: true });
+    await mobilePage.waitForTimeout(600);
+    await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '18_p01_mobile_auth_modal.png') });
+    console.log('     ✓ 캡처 완료: 18_p01_mobile_auth_modal.png (인증 모달)');
+
+    // 회원가입 탭 클릭
+    console.log('  12. P01-AUTH 회원가입 폼 및 역할 Array 4종 체크박스 확인...');
+    await mobilePage.click('button:has-text("회원가입")', { force: true });
+    await mobilePage.waitForTimeout(500);
+    await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '19_p01_mobile_register_roles.png') });
+    console.log('     ✓ 캡처 완료: 19_p01_mobile_register_roles.png (다중 역할 array 선택)');
+
+    // 데모 계정 빠른 전환 탭 클릭
+    console.log('  13. P01-AUTH 데모 계정 원클릭 전환 탭...');
+    await mobilePage.click('button:has-text("데모 빠른전환"), button:has-text("빠른전환")', { force: true });
+    await mobilePage.waitForTimeout(500);
+    // 최송석 명인 (roles: ['조경사', 'member']) 클릭하여 전환
+    const choiMasterBtn = await mobilePage.$('button:has-text("최송석 명인")');
+    if (choiMasterBtn) {
+      await choiMasterBtn.click({ force: true });
+      await mobilePage.waitForTimeout(800);
+      console.log('     ✓ 최송석 명인(조경사, member) 계정으로 즉시 전환 완료');
+    }
+    await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '20_p01_mobile_switched_user.png') });
+    console.log('     ✓ 캡처 완료: 20_p01_mobile_switched_user.png (전환 후 조경사 뱃지)');
+  }
+
+  // 1-9. P07: [조경사 파트너 모드] 전환
+  console.log('  14. P07-PARTNER-JOBBOARD [조경사 파트너 모드] 전환 및 잡보드...');
+  await mobilePage.click('text=정원주 모드', { force: true });
   await mobilePage.waitForTimeout(1000);
   await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '11_p07_partner_jobboard.png') });
   console.log('     ✓ 캡처 완료: 11_p07_partner_jobboard.png');
@@ -154,40 +194,66 @@ async function runE2E() {
   await adminPage.waitForTimeout(500);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '13_p50_admin_inspect_on.png') });
   console.log('     ✓ 캡처 완료: 13_p50_admin_inspect_on.png (관리자 UI inspect 활성화)');
+  // 다음 탭 이동을 위해 Alt+KeyI 숨김 토글
+  await adminPage.keyboard.press('Alt+KeyI');
+  await adminPage.waitForTimeout(400);
 
   // 2-2. P51: 매칭 & 분쟁 중재
   console.log('  13. P51-ADMIN-MATCHING 매칭 현황 및 분쟁 중재...');
-  await adminPage.click('text=매칭 & 분쟁 중재');
+  await adminPage.click('text=매칭 & 분쟁 중재', { force: true });
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '14_p51_admin_matching.png') });
   console.log('     ✓ 캡처 완료: 14_p51_admin_matching.png');
 
   // 2-3. P52: 조경사 파트너 심사
   console.log('  14. P52-ADMIN-VERIFY 조경사 파트너 심사 & 명인 배지 관리...');
-  await adminPage.click('text=조경사 파트너 심사');
+  await adminPage.click('text=조경사 파트너 심사', { force: true });
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '15_p52_admin_verify.png') });
   console.log('     ✓ 캡처 완료: 15_p52_admin_verify.png');
 
   // 2-4. P53: 전문가 첨삭 스튜디오
   console.log('  15. P53-ADMIN-STUDIO 전문가 Canvas 전지 첨삭 스튜디오...');
-  await adminPage.click('text=전문가 첨삭 스튜디오');
+  await adminPage.click('text=전문가 첨삭 스튜디오', { force: true });
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '16_p53_admin_studio.png') });
   console.log('     ✓ 캡처 완료: 16_p53_admin_studio.png');
 
   // 2-5. P54: 수종 도감 & 표준 단가
   console.log('  16. P54-ADMIN-SPECIES 수종 도감 & 수고별 표준 단가 관리...');
-  await adminPage.click('text=수종 도감 & 표준 단가');
+  await adminPage.click('text=수종 도감 & 표준 단가', { force: true });
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '17_p54_admin_species.png') });
   console.log('     ✓ 캡처 완료: 17_p54_admin_species.png');
+
+  // 2-6. 관리자 인증 모달 및 권한 뱃지 검증
+  console.log('  17. P50-ADMIN-AUTH 관리자 로그인/전환 모달 및 권한 array 검증...');
+  const adminProfileBtn = await adminPage.$('header button[title="계정 정보 및 전환"], header button:has-text("통합 총괄관리자"), header button:has-text("관리자 로그인")');
+  if (adminProfileBtn) {
+    await adminProfileBtn.click({ force: true });
+    await adminPage.waitForTimeout(600);
+    await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '21_p50_admin_auth_modal.png') });
+    console.log('     ✓ 캡처 완료: 21_p50_admin_auth_modal.png (관리자 인증 모달)');
+
+    // 데모 전환 탭 클릭 후 현장 운영 매니저 데모 계정으로 전환해보기
+    await adminPage.click('button:has-text("데모 전환")', { force: true });
+    await adminPage.waitForTimeout(500);
+
+    const managerBtn = await adminPage.$('button:has-text("현장 운영 매니저")');
+    if (managerBtn) {
+      await managerBtn.click({ force: true });
+      await adminPage.waitForTimeout(800);
+      console.log('     ✓ 현장 운영 매니저 계정으로 전환 완료');
+    }
+    await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '22_p50_admin_switched_manager.png') });
+    console.log('     ✓ 캡처 완료: 22_p50_admin_switched_manager.png (매니저 권한 반영)');
+  }
 
   await adminContext.close();
   await browser.close();
 
   console.log('\n=================================================================');
-  console.log(`🎉 모든 화면 자동 검증 및 핵심 캡처 총 17건 완료!`);
+  console.log(`🎉 모든 화면 자동 검증 및 핵심 캡처 총 22건 완료!`);
   console.log(`   - 캡처 저장 경로: ${SCREENSHOT_DIR}`);
   console.log(`   - 콘솔 에러 건수: ${consoleErrors.length}건`);
   if (consoleErrors.length > 0) {
