@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 30019,
     host: '0.0.0.0',
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:30020',
@@ -17,6 +18,7 @@ export default defineConfig({
   preview: {
     port: Number(process.env.PORT) || 30019,
     host: '0.0.0.0',
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:30020',
