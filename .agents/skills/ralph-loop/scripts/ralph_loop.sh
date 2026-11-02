@@ -8,7 +8,7 @@
 # source 또는 . 으로 실행 시 터미널 세션 닫힘(exit) 방지 -> 서브쉘 위임
 if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
   bash "${BASH_SOURCE[0]}" "$@"
-  return $? 2>/dev/null || exit $?
+  return $? 2>/dev/null || true
 fi
 
 set -euo pipefail

@@ -231,3 +231,4 @@ npm run seed
 
 본 프로젝트의 저작권은 **수형 (SOOHYUNG) / 가지톡 (GajiTalk) 플랫폼**에 있습니다.
 All rights reserved.
+

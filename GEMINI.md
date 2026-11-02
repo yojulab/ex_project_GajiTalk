@@ -72,3 +72,4 @@
 | **2026-11-02** | 운영 서버 DB 초기값 설정기(`init_db.sh`) 구축 및 `./backend/.env` 기반 시딩 연동 | `init_db.sh`, `seed_db.sh`, `backend`, `run_port.sh`, `package.json`, `GEMINI.md` | `./backend/.env` 설정 기반 5대 스키마 초기화, 수종 도감 8종 및 시드 데이터 적재 CLI 제공 |
 | **2026-11-02** | 전체 쉘 스크립트 source(`.`) 실행 시 터미널 세션 닫힘 방지 가드 및 tsc 절대 경로 복원 | `init_db.sh`, `generate_env.sh`, `run_port.sh`, `ralph_loop.sh`, `GEMINI.md` | `. script.sh` 실행 시 서브쉘 위임으로 상위 터미널 세션 종료 방지 및 node_modules/.bin 경로 보장 |
 | **2026-11-02** | 프로젝트 종합 README.md 구축 및 배포·운영·아키텍처 가이드 제공 | `README.md`, `GEMINI.md` | 3대 서비스(30018/30019/30020), 운영 .env 자동 생성, DB 시딩, UI Inspect 단축키, 골든 룰, 시드 계정 안내 종합 문서화 |
+| **2026-11-02** | interactive source(`.`) 실행 시 exit 호출 원천 제거 및 함수형 샌드박스(`_main`) 구조화 | `init_db.sh`, `generate_env.sh`, `run_port.sh`, `ralph_loop.sh`, `GEMINI.md` | 대화형 쉘에서 return 실패 시 exit $? 폴스루 버그 수정 및 _main 함수 캡슐화로 터미널 닫힘 원천 해결 |

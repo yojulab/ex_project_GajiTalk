@@ -29,25 +29,21 @@
 #      ./generate_env.sh --dry-run
 # ==============================================================================
 
-# source 또는 . 으로 실행 시 터미널 세션 닫힘(exit) 방지 -> 서브쉘 위임
-if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
-  bash "${BASH_SOURCE[0]}" "$@"
-  return $? 2>/dev/null || exit $?
-fi
+_main() {
+  set -euo pipefail
 
-set -euo pipefail
+  # 터미널 컬러 정의
+  local RED='\033[0;31m'
+  local GREEN='\033[0;32m'
+  local YELLOW='\033[1;33m'
+  local BLUE='\033[0;34m'
+  local CYAN='\033[0;36m'
+  local BOLD='\033[1m'
+  local NC='\033[0m'
 
-# 터미널 컬러 정의
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
-
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export PATH="${PROJECT_ROOT}/node_modules/.bin:${PATH}"
+  local PROJECT_ROOT
+  PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  export PATH="${PROJECT_ROOT}/node_modules/.bin:${PATH}"
 
 # 하위 워크스페이스 심볼릭 링크 안전 복원
 ensure_bin_links() {
@@ -110,7 +106,7 @@ show_help() {
   npm run env:prod
 ======================================================================
 EOF
-  exit 0
+  return 0
 }
 
 # 인자 파싱
@@ -119,6 +115,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
       show_help
+      return 0
       ;;
     -u|--uri)
       RAW_URI="$2"
@@ -371,8 +368,7 @@ write_or_preview_file() {
   echo -e "  ${GREEN}✓${NC} [생성 완료] ${BOLD}${rel_target}${NC} (${description})"
 }
 
-# 실행 단계
-main() {
+  # 실행 단계
   backup_existing_envs
 
   echo -e "${CYAN}▶ 환경 변수(.env) 파일 생성 진행 중...${NC}"
@@ -389,6 +385,14 @@ main() {
     echo -e "   • 상태 확인 명령   : ${CYAN}./run_port.sh status${NC}"
     echo "======================================================================"
   fi
+  return 0
 }
 
-main
+# source / . 실행 시 서브쉘 위임 및 터미널 닫힘 완벽 방어
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
+  bash "${BASH_SOURCE[0]}" "$@"
+  return $? 2>/dev/null || true
+else
+  _main "$@"
+  exit $?
+fi
