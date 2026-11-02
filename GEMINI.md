@@ -71,3 +71,4 @@
 | **2026-11-02** | 운영 서버용 4대 환경 변수(.env) 자동 생성기(`generate_env.sh`) 구축 및 연동 | `generate_env.sh`, `setup_env.sh`, `run_port.sh`, `package.json`, `.env.example`, `GEMINI.md` | 운영 MongoDB(`external_project_db_mongo`) URI 정규화 및 백업 기능 포함 일괄 .env 자동 배포 체계 마련 |
 | **2026-11-02** | 운영 서버 DB 초기값 설정기(`init_db.sh`) 구축 및 `./backend/.env` 기반 시딩 연동 | `init_db.sh`, `seed_db.sh`, `backend`, `run_port.sh`, `package.json`, `GEMINI.md` | `./backend/.env` 설정 기반 5대 스키마 초기화, 수종 도감 8종 및 시드 데이터 적재 CLI 제공 |
 | **2026-11-02** | 전체 쉘 스크립트 source(`.`) 실행 시 터미널 세션 닫힘 방지 가드 및 tsc 절대 경로 복원 | `init_db.sh`, `generate_env.sh`, `run_port.sh`, `ralph_loop.sh`, `GEMINI.md` | `. script.sh` 실행 시 서브쉘 위임으로 상위 터미널 세션 종료 방지 및 node_modules/.bin 경로 보장 |
+| **2026-11-02** | 프로젝트 종합 README.md 구축 및 배포·운영·아키텍처 가이드 제공 | `README.md`, `GEMINI.md` | 3대 서비스(30018/30019/30020), 운영 .env 자동 생성, DB 시딩, UI Inspect 단축키, 골든 룰, 시드 계정 안내 종합 문서화 |
