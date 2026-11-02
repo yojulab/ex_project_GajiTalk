@@ -18,6 +18,7 @@
 #   • stop              [all|30018|30019|30020] : 서비스 종료
 #   • restart           [all|30018|30019|30020] : 재시작
 #   • status                                    : 포트 가동 상태 점검
+#   • env               [MONGODB_URI]           : 운영 환경 변수(.env) 자동 생성
 #
 # [간편 축약 실행 예시]
 #   • ./run_port.sh all             -> 전체 서비스(30018, 30019, 30020) 운영 모드 기동
@@ -61,6 +62,17 @@ ensure_bin_links() {
   fi
 }
 ensure_bin_links
+
+# 환경 변수(.env) 자동 점검 및 부트스트랩
+ensure_env_files() {
+  if [ ! -f "${PROJECT_DIR}/.env" ] || [ ! -f "${PROJECT_DIR}/apps/backend/.env" ] || [ ! -f "${PROJECT_DIR}/apps/mobile-app/.env" ] || [ ! -f "${PROJECT_DIR}/apps/admin-web/.env" ]; then
+    if [ -x "${PROJECT_DIR}/generate_env.sh" ]; then
+      echo -e "${YELLOW}ℹ️  누락된 환경 변수(.env) 파일이 감지되어 generate_env.sh를 자동 실행합니다...${NC}"
+      "${PROJECT_DIR}/generate_env.sh"
+    fi
+  fi
+}
+ensure_env_files
 
 # 포트 활성 여부 점검 (소켓 프로브 + /dev/tcp 안전망)
 is_port_in_use() {
@@ -366,6 +378,11 @@ case "$MAIN_ARG" in
     ;;
   status)
     cmd_status
+    ;;
+  env|setup-env)
+    shift || true
+    "${PROJECT_DIR}/generate_env.sh" "$@"
+    exit $?
     ;;
   30018|30019|30020|mobile|admin|api|backend|all)
     cmd_start "prod" "$MAIN_ARG"
