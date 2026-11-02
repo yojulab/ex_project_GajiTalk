@@ -29,10 +29,10 @@
 ## 2. `수형 (SOOHYUNG) / 가지톡 (GajiTalk)` 핵심 아키텍처 및 개발 가드레일
 
 1. **`./apps/` 하위 폴더 구분 및 지정 포트(`30018`, `30019`, `30020`) 고정 원칙**:
-   - 모든 웹, 앱, 백엔드 서비스는 반드시 **`./apps/` 하위 폴더로 구분**하며 다음 포트에 바인딩합니다:
-     - **`./apps/mobile-app` (Port `30018`)**: 정원주(고객) 모드 & 전문 조경사(파트너) 모드 전환 지원 모바일 웹/앱 (React + Vite, TypeScript, Tailwind CSS, HTML5 Canvas)
-     - **`./apps/admin-web` (Port `30019`)**: 통합 관리자 웹 백오피스 & 전문가 Canvas 절단선 첨삭 스튜디오 (React + Vite, TypeScript, Tailwind CSS, TanStack Query, Recharts)
-     - **`./apps/backend` (Port `30020`)**: RESTful API & Vision AI / Inpainting / `2dsphere` 위치 기반 조경사 매칭 서버 (Node.js + Express/NestJS, TypeScript, Mongoose, MongoDB)
+   - 모든 웹, 앱, 백엔드 서비스는 반드시 **`./apps/` 하위 폴더로 구분**하며 다음 포트 및 운영 도메인에 바인딩합니다:
+     - **`./apps/admin-web` (Port `30018`, `https://jupiter.axfoundly.com`)**: 통합 관리자 웹 백오피스 & 전문가 Canvas 절단선 첨삭 스튜디오 (React + Vite, TypeScript, Tailwind CSS, TanStack Query, Recharts)
+     - **`./apps/mobile-app` (Port `30019`, `https://saturn.axfoundly.com`)**: 정원주(고객) 모드 & 전문 조경사(파트너) 모드 전환 지원 모바일 웹/앱 (React + Vite, TypeScript, Tailwind CSS, HTML5 Canvas)
+     - **`./apps/backend` (Port `30020`, `https://uranus.axfoundly.com`)**: RESTful API & Vision AI / Inpainting / `2dsphere` 위치 기반 조경사 매칭 서버 (Node.js + Express/NestJS, TypeScript, Mongoose, MongoDB)
      - **`./tests/`**: Playwright Headless 기반 핵심 화면 캡처 및 E2E 자동 검증 슈트
 2. **실사(Real-Photo) 기반 전지 시뮬레이션 & O2O 매칭 직결 원칙**:
    - 만화풍 그래픽을 배제하고, 실제 촬영된 나무 사진 위에 **절단 위치(`cuttingGuides`: 도장지, 내향지, 교차지, 하향지, 병충해가지)**를 오버레이하며, **가상 가위질 스와이프**, **전지 직후 비교(`BeforeAfterSlider`)**, **시계열 생장 예측(`GrowthTimelineBar`: 직후 → 6개월 → 1년 → 3년 후)**을 제공합니다.
@@ -55,9 +55,9 @@
 | :--- | :--- | :--- | :--- |
 | **System & Geo-DB Architect** | Gemini Pro | `./apps/backend` (`:30020`), 루트 인프라 | `./apps/*` 모노레포 워크스페이스, MongoDB 5대 스키마(`users`, `gardens`, `pruning_simulations`, `matching_requests`, `tree_species`) 및 `2dsphere` 위치 인덱스, 시드 데이터, `run_port.sh`, `.env` 설계 |
 | **Vision AI & Simulation Specialist** | Gemini Pro | `./apps/backend/src/services` (`:30020`) | 실사 수목 주간/주지/7대 기피 가지 세그멘테이션, 절단선 좌표(`cutLineCoords`) 도출, Image Inpainting 연동 전지 직후 및 6개월/1년/3년 후 생장 예측 파이프라인(`visionAi.service.ts`, `inpaintingAi.service.ts`) |
-| **Mobile Garden & Canvas UX Specialist** | Gemini Pro/Flash | `./apps/mobile-app` (`:30018`) | 정원주 ⇄ 조경사 모드 전환 UX, `BranchOverlayCanvas`(절단선 오버레이 & 스와이프 가상 가위질), `BeforeAfterSlider`, `GrowthTimelineBar`, 내 정원(`MyGardenPage`) 수목 생장 타임라인 및 UI inspect 태깅 |
-| **O2O Matching & Bidding Specialist** | Gemini Pro/Flash | `./apps/mobile-app` (`:30018`) & `:30020` | AI 시뮬레이션 원클릭 첨부 견적 요청(`QuoteRequestModal`), 공개 입찰(역경매) & 1:1 지정 의뢰, 상세 견적 내역(`laborCost`, `equipmentCost`, `wasteDisposalCost`) 비교/채택(`QuoteComparisonList`), 조경사 파트너 잡보드(`PartnerJobBoardPage`), 시공 완료 Before/After 리포트 |
-| **Admin Studio & Horticulture Specialist** | Gemini Pro/Flash | `./apps/admin-web` (`:30019`) | 통합 운영 대시보드(`DashboardPage`), 조경사 자격 심사 및 인증 명인 배지(`isMasterBadge`) 부여(`LandscaperVerifyPage`), 매칭 모니터링/수동 배정/분쟁 조정(`MatchingManagePage`), 전문가 Canvas 절단선 첨삭 스튜디오(`SimulationReviewPage`), 수종 도감·룰셋·표준 단가 관리(`SpeciesManagePage`) |
+| **Mobile Garden & Canvas UX Specialist** | Gemini Pro/Flash | `./apps/mobile-app` (`:30019`) | 정원주 ⇄ 조경사 모드 전환 UX, `BranchOverlayCanvas`(절단선 오버레이 & 스와이프 가상 가위질), `BeforeAfterSlider`, `GrowthTimelineBar`, 내 정원(`MyGardenPage`) 수목 생장 타임라인 및 UI inspect 태깅 |
+| **O2O Matching & Bidding Specialist** | Gemini Pro/Flash | `./apps/mobile-app` (`:30019`) & `:30020` | AI 시뮬레이션 원클릭 첨부 견적 요청(`QuoteRequestModal`), 공개 입찰(역경매) & 1:1 지정 의뢰, 상세 견적 내역(`laborCost`, `equipmentCost`, `wasteDisposalCost`) 비교/채택(`QuoteComparisonList`), 조경사 파트너 잡보드(`PartnerJobBoardPage`), 시공 완료 Before/After 리포트 |
+| **Admin Studio & Horticulture Specialist** | Gemini Pro/Flash | `./apps/admin-web` (`:30018`) | 통합 운영 대시보드(`DashboardPage`), 조경사 자격 심사 및 인증 명인 배지(`isMasterBadge`) 부여(`LandscaperVerifyPage`), 매칭 모니터링/수동 배정/분쟁 조정(`MatchingManagePage`), 전문가 Canvas 절단선 첨삭 스튜디오(`SimulationReviewPage`), 수종 도감·룰셋·표준 단가 관리(`SpeciesManagePage`) |
 | **Quality & E2E Assurer** | Gemini Pro | `./tests/`, 전체 포트 (`:30018`, `:30019`, `:30020`) | Playwright Headless 핵심 화면 자동 캡처 슈트, `data-serial-id` 기반 UI inspect 검증, 시뮬레이션→견적요청→입찰→채택→시공완료→관리자 검수 E2E 무결성 검증 |
 
 ---
@@ -73,3 +73,4 @@
 | **2026-11-02** | 전체 쉘 스크립트 source(`.`) 실행 시 터미널 세션 닫힘 방지 가드 및 tsc 절대 경로 복원 | `init_db.sh`, `generate_env.sh`, `run_port.sh`, `ralph_loop.sh`, `GEMINI.md` | `. script.sh` 실행 시 서브쉘 위임으로 상위 터미널 세션 종료 방지 및 node_modules/.bin 경로 보장 |
 | **2026-11-02** | 프로젝트 종합 README.md 구축 및 배포·운영·아키텍처 가이드 제공 | `README.md`, `GEMINI.md` | 3대 서비스(30018/30019/30020), 운영 .env 자동 생성, DB 시딩, UI Inspect 단축키, 골든 룰, 시드 계정 안내 종합 문서화 |
 | **2026-11-02** | interactive source(`.`) 실행 시 exit 호출 원천 제거 및 함수형 샌드박스(`_main`) 구조화 | `init_db.sh`, `generate_env.sh`, `run_port.sh`, `ralph_loop.sh`, `GEMINI.md` | 대화형 쉘에서 return 실패 시 exit $? 폴스루 버그 수정 및 _main 함수 캡슐화로 터미널 닫힘 원천 해결 |
+| **2026-11-02** | 운영 서버 도메인(jupiter/saturn/uranus) 및 포트(30018 admin, 30019 mobile, 30020 backend) 매핑 .env 자동 동기화 | `generate_env.sh`, `run_port.sh`, `apps/admin-web/vite.config.ts`, `apps/mobile-app/vite.config.ts`, `package.json`, `.env.example`, `README.md`, `GEMINI.md`, `AGENTS.md` | 운영 배포 실도메인 규격에 맞춰 관리자 웹(30018), 모바일 앱(30019), 백엔드 API(30020) 매핑 재정의 및 .env 생성기/Vite 빌드 파이프라인 연동 |

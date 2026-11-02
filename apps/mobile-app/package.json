@@ -5,10 +5,10 @@
   "type": "module",
   "description": "수형 (SOOHYUNG) 정원주·조경사 모바일 웹/앱 (React + Vite)",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 30018",
+    "dev": "vite --host 0.0.0.0 --port 30019",
     "build": "tsc && vite build",
-    "start": "vite preview --host 0.0.0.0 --port 30018",
-    "preview": "vite preview --host 0.0.0.0 --port 30018"
+    "start": "vite preview --host 0.0.0.0 --port 30019",
+    "preview": "vite preview --host 0.0.0.0 --port 30019"
   },
   "dependencies": {
     "clsx": "^2.1.0",

@@ -2,20 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Mobile App: 정원주·조경사 앱 Vite (Port 30018)",
+      "name": "Admin Web: 통합 관리자 & 첨삭 스튜디오 Vite (Port 30018)",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/apps/mobile-app",
+      "cwd": "${workspaceFolder}/apps/admin-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Admin Web: 통합 관리자 & 첨삭 스튜디오 Vite (Port 30019)",
+      "name": "Mobile App: 정원주·조경사 앱 Vite (Port 30019)",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/apps/admin-web",
+      "cwd": "${workspaceFolder}/apps/mobile-app",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "console": "integratedTerminal",
@@ -44,8 +44,8 @@
       "name": "Fullstack: 3개 서버 동시 실행 (:30018, :30019, :30020)",
       "configurations": [
         "Backend: Node.js + MongoDB API 서버 (Port 30020)",
-        "Mobile App: 정원주·조경사 앱 Vite (Port 30018)",
-        "Admin Web: 통합 관리자 & 첨삭 스튜디오 Vite (Port 30019)"
+        "Admin Web: 통합 관리자 & 첨삭 스튜디오 Vite (Port 30018)",
+        "Mobile App: 정원주·조경사 앱 Vite (Port 30019)"
       ]
     }
   ]

@@ -40,9 +40,9 @@
 ```
 apps/ex_project_GajiTalk/
 ├── apps/
-│   ├── mobile-app/          # [Port 30018] 정원주 & 조경사 모바일 웹/앱 (React + Vite)
-│   ├── admin-web/           # [Port 30019] 통합 관리자 웹 & 첨삭 스튜디오 (React + Vite)
-│   └── backend/             # [Port 30020] RESTful API & AI/매칭 서버 (Node.js + Express)
+│   ├── admin-web/           # [Port 30018] 웹 : 관리자 & 첨삭 스튜디오 (https://jupiter.axfoundly.com)
+│   ├── mobile-app/          # [Port 30019] 모바일 앱 - 정원주·조경사 (https://saturn.axfoundly.com)
+│   └── backend/             # [Port 30020] backend REST API & AI 서버 (https://uranus.axfoundly.com)
 ├── backend -> apps/backend  # 루트 단축 심볼릭 링크
 ├── generate_env.sh          # 운영 서버용 4대 .env 일괄 자동 생성기
 ├── init_db.sh               # ./backend/.env 설정 기반 운영 DB 초기화 및 시딩
@@ -50,10 +50,10 @@ apps/ex_project_GajiTalk/
 └── tests/                   # Playwright Headless E2E 무인 자동 검증 슈트
 ```
 
-### 서비스 접속 엔드포인트
-- 📱 **모바일 앱 (정원주·조경사 모드)**: `http://localhost:30018` (외부 바인딩 `http://0.0.0.0:30018`)
-- 💻 **통합 관리자 웹 & AI 첨삭 스튜디오**: `http://localhost:30019` (외부 바인딩 `http://0.0.0.0:30019`)
-- ⚙️ **백엔드 REST API 엔진**: `http://localhost:30020/api` (외부 바인딩 `http://0.0.0.0:30020`)
+### 운영 서비스 도메인 및 접속 엔드포인트
+- 💻 **웹 : 관리자 (통합 관리자 & AI 첨삭 스튜디오)**: **`https://jupiter.axfoundly.com`** (내부 포트 `:30018`)
+- 📱 **모바일 앱 (정원주·조경사 모드)**: **`https://saturn.axfoundly.com`** (내부 포트 `:30019`)
+- ⚙️ **backend REST API 엔진**: **`https://uranus.axfoundly.com/api`** (내부 포트 `:30020`)
 
 ---
 
@@ -109,9 +109,9 @@ npm run env:prod
 
 **자동 생성되는 4대 환경 변수 파일**:
 1. `./.env` (루트 통합 공통 설정)
-2. `./apps/backend/.env` (포트 `30020`, MongoDB URI, JWT Secret, Seed 계정 등)
-3. `./apps/mobile-app/.env` (포트 `30018`, API Base URL, 지도 기본 좌표)
-4. `./apps/admin-web/.env` (포트 `30019`, API Base URL, 모바일 앱 연동 URL)
+2. `./apps/admin-web/.env` (포트 `30018`, 도메인 `https://jupiter.axfoundly.com`, API 연동 URL)
+3. `./apps/mobile-app/.env` (포트 `30019`, 도메인 `https://saturn.axfoundly.com`, API 연동 URL)
+4. `./apps/backend/.env` (포트 `30020`, 도메인 `https://uranus.axfoundly.com`, MongoDB URI 등)
 
 ---
 

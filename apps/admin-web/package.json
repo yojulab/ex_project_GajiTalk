@@ -5,10 +5,10 @@
   "type": "module",
   "description": "수형 (SOOHYUNG) 통합 관리자 웹 & 전문가 Canvas 첨삭 스튜디오",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 30019",
+    "dev": "vite --host 0.0.0.0 --port 30018",
     "build": "tsc && vite build",
-    "start": "vite preview --host 0.0.0.0 --port 30019",
-    "preview": "vite preview --host 0.0.0.0 --port 30019"
+    "start": "vite preview --host 0.0.0.0 --port 30018",
+    "preview": "vite preview --host 0.0.0.0 --port 30018"
   },
   "dependencies": {
     "clsx": "^2.1.0",

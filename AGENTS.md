@@ -9,10 +9,10 @@
 1. **상시 룰 및 작업지시서 참조**:
    - 작업을 시작하기 전 반드시 [GEMINI.md](file:///apps/ex_project_GajiTalk/GEMINI.md), 작업지시서([docs/PRDs/WORK_ORDER.md](file:///apps/ex_project_GajiTalk/docs/PRDs/WORK_ORDER.md)), 도메인 룰([.agents/rules/soohyung-domain.md](file:///apps/ex_project_GajiTalk/.agents/rules/soohyung-domain.md)), 조경·수목 전지 용어 룰([.agents/rules/arboriculture-terminology.md](file:///apps/ex_project_GajiTalk/.agents/rules/arboriculture-terminology.md)), 오케스트레이션 파이프라인 룰([.agents/rules/orchestration-pipeline.md](file:///apps/ex_project_GajiTalk/.agents/rules/orchestration-pipeline.md)), UI 태깅 인스펙션 룰([.agents/rules/ui-tagging-inspection.md](file:///apps/ex_project_GajiTalk/.agents/rules/ui-tagging-inspection.md)), Git 워크플로우 룰([.agents/rules/git-workflow.md](file:///apps/ex_project_GajiTalk/.agents/rules/git-workflow.md))을 준수한다.
 2. **`./apps/` 하위 폴더 구분 및 지정 포트(`30018`, `30019`, `30020`) 엄수**:
-   - 모든 웹·앱·백엔드 서비스는 반드시 **`./apps/` 하위 폴더로 구분**하여 구성하고 지정된 포트만 사용한다:
-     - **`./apps/mobile-app`** (Port **`30018`**): 정원주(고객) & 전문 조경사(파트너) 모바일 웹/앱 (React + Vite)
-     - **`./apps/admin-web`** (Port **`30019`**): 통합 관리자 웹 & 전문가 Canvas 첨삭 스튜디오 (React + Vite)
-     - **`./apps/backend`** (Port **`30020`**): RESTful API & AI 시뮬레이션/위치 매칭 서버 (Node.js + Express/NestJS + MongoDB)
+   - 모든 웹·앱·백엔드 서비스는 반드시 **`./apps/` 하위 폴더로 구분**하여 구성하고 지정된 포트 및 운영 도메인만 사용한다:
+     - **`./apps/admin-web`** (Port **`30018`**, `https://jupiter.axfoundly.com`): 통합 관리자 웹 & 전문가 Canvas 첨삭 스튜디오 (React + Vite)
+     - **`./apps/mobile-app`** (Port **`30019`**, `https://saturn.axfoundly.com`): 정원주(고객) & 전문 조경사(파트너) 모바일 웹/앱 (React + Vite)
+     - **`./apps/backend`** (Port **`30020`**, `https://uranus.axfoundly.com`): RESTful API & AI 시뮬레이션/위치 매칭 서버 (Node.js + Express/NestJS + MongoDB)
 3. **의뢰자 소통용 UI 일련번호 태깅 및 4대 정보 뱃지 복사 규정 준수**:
    - 모든 화면과 주요 인터랙션 태그 요소에 고유 일련번호(`[P01-SEC01-BTN01]`, `data-serial-id`)를 부여하여 의뢰자와 정밀하게 소통한다.
    - 단축키 `Alt + I`로 뱃지 표시/숨김 토글을 지원하고, 뱃지 클릭 시 **4대 핵심 정보(일련번호, 페이지명, URI, 항목명)**가 클립보드에 정돈되어 복사(`[Copied! ✓]`)되도록 설계 및 검증한다.
@@ -33,5 +33,5 @@
 9. **무한 폴링 금지**:
    - 백그라운드 태스크나 메시지를 기다릴 때 루프를 돌며 상태를 조회하지 않는다. Antigravity의 반응형 웨이크업(Reactive Wakeup) 시스템에 맡기고 도구 호출을 종료한다.
 10. **Playwright Headless 무인 자동 검증 및 핵심 화면 캡처 의무화**:
-    - 모든 UI/API 변경 및 주요 마일스톤 완료 시 `./run_port.sh status` 및 Playwright Headless 검증 스크립트를 실행하여 모바일 앱(`:30018` 정원주/조경사 모드), 관리자 웹(`:30019`), 백엔드 API(`:30020`) 전 화면의 무결성(HTTP 200, 콘솔/렌더링 에러 0건)을 기계적으로 자동 캡처·검증한다.
+    - 모든 UI/API 변경 및 주요 마일스톤 완료 시 `./run_port.sh status` 및 Playwright Headless 검증 스크립트를 실행하여 관리자 웹(`:30018`), 모바일 앱(`:30019` 정원주/조경사 모드), 백엔드 API(`:30020`) 전 화면의 무결성(HTTP 200, 콘솔/렌더링 에러 0건)을 기계적으로 자동 캡처·검증한다.
     - 리눅스 컨테이너 환경의 안정적 무인 실행을 위해 필수 브라우저 4대 런치 옵션(`--no-sandbox`, `--disable-setuid-sandbox`, `--disable-dev-shm-usage`, `--disable-gpu`)을 준수한다.

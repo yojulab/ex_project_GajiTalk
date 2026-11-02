@@ -20,9 +20,9 @@ async function runE2E() {
   const consoleErrors = [];
 
   // =================================================================
-  // [PART 1] 모바일 웹/앱 검증 (Port 30018, 모바일 뷰포트 390x844)
+  // [PART 1] 모바일 웹/앱 검증 (Port 30019, 모바일 뷰포트 390x844)
   // =================================================================
-  console.log('\n📱 [PART 1] 모바일 앱 (:30018) 전 화면 및 인터랙션 검증...');
+  console.log('\n📱 [PART 1] 모바일 앱 (:30019) 전 화면 및 인터랙션 검증...');
   const mobileContext = await browser.newContext({
     viewport: { width: 390, height: 844 },
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1'
@@ -42,7 +42,7 @@ async function runE2E() {
 
   // 1-1. P01: 정원주 메인 홈
   console.log('  1. P01-MOBILE-HOME 메인 홈 접속 및 렌더링...');
-  await mobilePage.goto('http://localhost:30018', { waitUntil: 'networkidle' });
+  await mobilePage.goto('http://localhost:30019', { waitUntil: 'networkidle' });
   await mobilePage.waitForTimeout(1000);
   await mobilePage.screenshot({ path: path.join(SCREENSHOT_DIR, '01_p01_mobile_home.png') });
   console.log('     ✓ 캡처 완료: 01_p01_mobile_home.png');
@@ -184,9 +184,9 @@ async function runE2E() {
   await mobileContext.close();
 
   // =================================================================
-  // [PART 2] 관리자 웹 검증 (Port 30019, 데스크탑 뷰포트 1440x900)
+  // [PART 2] 관리자 웹 검증 (Port 30018, 데스크탑 뷰포트 1440x900)
   // =================================================================
-  console.log('\n🖥️ [PART 2] 통합 관리자 웹 (:30019) 전 화면 검증...');
+  console.log('\n🖥️ [PART 2] 통합 관리자 웹 (:30018) 전 화면 검증...');
   const adminContext = await browser.newContext({
     viewport: { width: 1440, height: 900 }
   });
@@ -200,7 +200,7 @@ async function runE2E() {
 
   // 2-1. P50: 통합 운영 대시보드
   console.log('  12. P50-ADMIN-DASHBOARD 대시보드 접속 및 차트 렌더링...');
-  await adminPage.goto('http://localhost:30019', { waitUntil: 'networkidle' });
+  await adminPage.goto('http://localhost:30018', { waitUntil: 'networkidle' });
   await adminPage.waitForTimeout(1000);
   await adminPage.screenshot({ path: path.join(SCREENSHOT_DIR, '12_p50_admin_dashboard.png') });
   console.log('     ✓ 캡처 완료: 12_p50_admin_dashboard.png');

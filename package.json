@@ -19,11 +19,11 @@
     "env:setup": "./generate_env.sh",
     "db:init": "./init_db.sh",
     "seed": "./init_db.sh",
-    "dev:mobile": "./run_port.sh dev 30018",
-    "dev:admin": "./run_port.sh dev 30019",
+    "dev:admin": "./run_port.sh dev 30018",
+    "dev:mobile": "./run_port.sh dev 30019",
     "dev:backend": "./run_port.sh dev 30020",
-    "build:mobile": "./compile.sh 30018",
-    "build:admin": "./compile.sh 30019",
+    "build:admin": "./compile.sh 30018",
+    "build:mobile": "./compile.sh 30019",
     "build:backend": "./compile.sh 30020"
   },
   "devDependencies": {

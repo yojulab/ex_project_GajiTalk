@@ -101,10 +101,10 @@ const AdminMainContent: React.FC = () => {
             <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60 text-xs space-y-2">
               <div className="flex items-center justify-between text-slate-400 text-[11px]">
                 <span>정원주 모바일 앱</span>
-                <span className="text-emerald-400 font-bold">:30018</span>
+                <span className="text-emerald-400 font-bold">:30019</span>
               </div>
               <a
-                href="http://localhost:30018"
+                href={import.meta.env.VITE_MOBILE_APP_URL || "https://saturn.axfoundly.com"}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-center gap-1.5 w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-colors"

@@ -24,8 +24,8 @@ ex_project_GajiTalk/
 ├── run_port.sh                            # 포트(30018, 30019, 30020) 통합 기동/컴파일 스크립트
 ├── compile.sh                             # run_port.sh 심볼릭 링크 (컴파일 단축 실행)
 ├── apps/
-│   ├── mobile-app/                        # [Port 30018] 정원주(고객) & 조경사(파트너) 모바일 웹/앱 (React + Vite)
-│   ├── admin-web/                         # [Port 30019] 통합 관리자 웹 & 전문가 첨삭 스튜디오 (React + Vite)
+│   ├── admin-web/                         # [Port 30018] 통합 관리자 웹 & 전문가 첨삭 스튜디오 (React + Vite)
+│   ├── mobile-app/                        # [Port 30019] 정원주(고객) & 조경사(파트너) 모바일 웹/앱 (React + Vite)
 │   └── backend/                           # [Port 30020] REST API & AI/매칭 엔진 서버 (Node.js + MongoDB)
 ├── tests/                                 # [E2E & Automation] Playwright Headless 캡처 및 검증 슈트
 └── docs/
@@ -38,8 +38,8 @@ ex_project_GajiTalk/
 
 | 타겟 구분 | 폴더 경로 | 포트 | 기술 스택 | 핵심 역할 및 아키텍처 규격 |
 | :--- | :--- | :---: | :--- | :--- |
-| **모바일 앱/웹** | `./apps/mobile-app` | **`30018`** | React (Vite), TypeScript, Tailwind CSS, Capacitor/PWA, HTML5 Canvas API | **정원주(고객) 모드 & 조경사(전문가) 모드 통합 앱**. 나무 촬영, `BranchOverlayCanvas`(절단선 마킹 & 스와이프 가상 가위질), `BeforeAfterSlider`, `GrowthTimelineBar`(직후/6개월/1년/3년), 내 정원 관리, 견적 요청/입찰/포트폴리오 탐색. |
-| **관리자 웹** | `./apps/admin-web` | **`30019`** | React (Vite), TypeScript, Tailwind CSS, TanStack Query, Recharts, Canvas | **통합 관리자 백오피스**. 시뮬레이션·매칭 거래액 대시보드, 조경사 자격 심사 및 명인 배지(`isMasterBadge`) 부여, 매칭/분쟁 중재, AI 전지 검수 & 전문가 Canvas 첨삭 스튜디오, 수종 도감·룰셋·표준 단가 기준표 관리. |
+| **관리자 웹** | `./apps/admin-web` | **`30018`** | React (Vite), TypeScript, Tailwind CSS, TanStack Query, Recharts, Canvas | **통합 관리자 백오피스**. 시뮬레이션·매칭 거래액 대시보드, 조경사 자격 심사 및 명인 배지(`isMasterBadge`) 부여, 매칭/분쟁 중재, AI 전지 검수 & 전문가 Canvas 첨삭 스튜디오, 수종 도감·룰셋·표준 단가 기준표 관리. |
+| **모바일 앱/웹** | `./apps/mobile-app` | **`30019`** | React (Vite), TypeScript, Tailwind CSS, Capacitor/PWA, HTML5 Canvas API | **정원주(고객) 모드 & 조경사(전문가) 모드 통합 앱**. 나무 촬영, `BranchOverlayCanvas`(절단선 마킹 & 스와이프 가상 가위질), `BeforeAfterSlider`, `GrowthTimelineBar`(직후/6개월/1년/3년), 내 정원 관리, 견적 요청/입찰/포트폴리오 탐색. |
 | **백엔드 API** | `./apps/backend` | **`30020`** | Node.js (Express / NestJS), TypeScript, Mongoose, MongoDB (`2dsphere`) | **RESTful API & AI/O2O 매칭 서버**. Vision AI 가지 구조 분석, Image Inpainting 실사 전지/생장 합성, GeoJSON `2dsphere` 기반 반경 내 조경사 매칭 및 견적 입찰·시공 완료 리포트 관리. |
 | **E2E 테스트** | `./tests` | - | Playwright (Headless Mode), TypeScript/JS | **무인 자동 검증 슈트**. 3개 포트(`:30018`, `:30019`, `:30020`) 핵심 화면 캡처, `data-serial-id` 기반 UI inspect 검증, 시뮬레이션→견적→입찰→매칭 E2E 검증. |
 
@@ -47,7 +47,7 @@ ex_project_GajiTalk/
 
 ## 2. 핵심 도메인 기능 명세 요약
 
-### 2-1. 모바일 앱 (`./apps/mobile-app` : Port `30018`)
+### 2-1. 모바일 앱 (`./apps/mobile-app` : Port `30019`)
 1. **[정원주 모드] 수목 촬영 및 실사 기반 가지치기 가이드**:
    - 수종 판별(소나무, 단풍나무, 배롱나무, 유실수 등) 및 목표 수형(자연형, 통풍 개선, 구름형, 크기 억제 등) 선택.
    - 실사 이미지 위 7대 기피 가지(도장지, 내향지, 교차지, 하향지, 병충해가지 등) 색상별 라인 & 가위 절단선 오버레이 표시, 포인트 터치 시 절단 이유(`reason`)와 기대 효과(`expectedEffect`) 안내.
@@ -67,7 +67,7 @@ ex_project_GajiTalk/
    - 반경 내 작업 요청 확인, AI 시뮬레이션 이미지 위 전문가 Canvas 첨삭 라인 추가, 상세 견적 내역(`laborCost`, `equipmentCost`, `wasteDisposalCost`) 및 방문 가능 일자 발송.
    - 현장 시공 완료 후 실제 Before/After 사진과 관리 팁 제출 → 고객의 '내 정원 타임라인'에 자동 기록 및 정산 진행.
 
-### 2-2. 통합 관리자 웹 (`./apps/admin-web` : Port `30019`)
+### 2-2. 통합 관리자 웹 (`./apps/admin-web` : Port `30018`)
 1. **통합 운영 대시보드 (`DashboardPage`)**: 일별/월별 AI 시뮬레이션 건수, 매칭 요청 건수, 견적 체결률, 거래액/수수료 매출, 지역별 수급 현황 시각화.
 2. **조경사 파트너 심사 (`LandscaperVerifyPage`)**: 자격증(조경기술사, 조경기사, 나무의사, 분재관리사 등), 경력, 포트폴리오 검증(`PENDING` → `VERIFIED`/`REJECTED`) 및 인증 명인 배지(`isMasterBadge`) 부여.
 3. **매칭 모니터링 및 분쟁 조정 (`MatchingManagePage`)**: 매칭 상태(`OPEN` → `QUOTING` → `MATCHED` → `IN_PROGRESS` → `COMPLETED`) 추적, 미매칭 건 수동 추천/배정, 시공 전/후 사진 및 AI 시뮬레이션 합의안 대조 중재.

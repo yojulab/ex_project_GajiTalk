@@ -3,9 +3,9 @@
 # 수형 (SOOHYUNG) / 가지톡 (GajiTalk) 플랫폼 - 포트 관리 및 컴파일 통합 스크립트 (run_port.sh)
 #
 # [할당 포트 및 ./apps/ 폴더 구조]
-#   • 30018 (mobile / app)   : ./apps/mobile-app  (정원주·조경사 모바일 웹/앱 - React + Vite)
-#   • 30019 (admin)          : ./apps/admin-web   (통합 관리자 웹 & 첨삭 스튜디오 - React + Vite)
-#   • 30020 (api / backend)  : ./apps/backend     (백엔드 REST API & AI/매칭 서버 - Node.js + MongoDB)
+#   • 30018 (admin / 웹:관리자) : ./apps/admin-web   (통합 관리자 웹 & 첨삭 스튜디오 - https://jupiter.axfoundly.com)
+#   • 30019 (mobile / 모바일앱) : ./apps/mobile-app  (정원주·조경사 모바일 웹/앱 - https://saturn.axfoundly.com)
+#   • 30020 (api / backend)     : ./apps/backend     (백엔드 REST API & AI/매칭 서버 - https://uranus.axfoundly.com)
 #
 # [사용법]
 #   ./run_port.sh [명령어] [대상]
@@ -23,7 +23,7 @@
 #
 # [간편 축약 실행 예시]
 #   • ./run_port.sh all             -> 전체 서비스(30018, 30019, 30020) 운영 모드 기동
-#   • ./run_port.sh 30018           -> 30018(모바일 앱) 단일 운영 모드 기동
+#   • ./run_port.sh 30018           -> 30018(웹:관리자) 단일 운영 모드 기동
 #   • ./compile.sh all              -> 전체 서비스 일괄 컴파일
 #   • ./run_port.sh stop all        -> 전체 서비스 일괄 중지
 #   • ./run_port.sh status          -> 현재 포트 및 PID 점검
@@ -99,8 +99,8 @@ get_port_pids() {
   local pids=""
 
   case "$port" in
-    30018) pids=$(pgrep -f "(vite.*30018|PORT=30018|ex_project_GajiTalk/apps/mobile-app)" 2>/dev/null || true) ;;
-    30019) pids=$(pgrep -f "(vite.*30019|PORT=30019|ex_project_GajiTalk/apps/admin-web)" 2>/dev/null || true) ;;
+    30018) pids=$(pgrep -f "(vite.*30018|PORT=30018|ex_project_GajiTalk/apps/admin-web)" 2>/dev/null || true) ;;
+    30019) pids=$(pgrep -f "(vite.*30019|PORT=30019|ex_project_GajiTalk/apps/mobile-app)" 2>/dev/null || true) ;;
     30020) pids=$(pgrep -f "(PORT=30020|ex_project_GajiTalk/apps/backend)" 2>/dev/null || true) ;;
   esac
 
@@ -115,8 +115,8 @@ get_port_pids() {
 get_service_meta() {
   local port=$1
   case "$port" in
-    30018) echo "apps/mobile-app:모바일 앱 - 정원주·조경사 (Vite):dist/index.html" ;;
-    30019) echo "apps/admin-web:통합 관리자 웹 & 첨삭 스튜디오 (Vite):dist/index.html" ;;
+    30018) echo "apps/admin-web:웹 관리자 & 첨삭 스튜디오 (Vite):dist/index.html" ;;
+    30019) echo "apps/mobile-app:모바일 앱 - 정원주·조경사 (Vite):dist/index.html" ;;
     30020) echo "apps/backend:백엔드 REST API & AI/매칭 엔진 (Node.js):dist/index.js" ;;
     *)     echo "unknown:알 수 없음:" ;;
   esac
@@ -163,8 +163,8 @@ cmd_build() {
   echo -e "${CYAN}=================================================================${NC}"
 
   case "$target" in
-    30018|mobile|app|mobile-app) build_service 30018 ;;
-    30019|admin|admin-web)       build_service 30019 ;;
+    30018|admin|admin-web)       build_service 30018 ;;
+    30019|mobile|app|mobile-app) build_service 30019 ;;
     30020|api|backend)           build_service 30020 ;;
     all)
       build_service 30020
@@ -208,8 +208,8 @@ stop_service() {
 cmd_stop() {
   local target=${1:-all}
   case "$target" in
-    30018|mobile|app|mobile-app) stop_service 30018 ;;
-    30019|admin|admin-web)       stop_service 30019 ;;
+    30018|admin|admin-web)       stop_service 30018 ;;
+    30019|mobile|app|mobile-app) stop_service 30019 ;;
     30020|api|backend)           stop_service 30020 ;;
     all)
       stop_service 30018
@@ -303,13 +303,13 @@ cmd_start() {
   echo -e "${CYAN}=================================================================${NC}"
 
   case "$target" in
-    30018|mobile|app|mobile-app) start_service 30018 "$mode" ;;
-    30019|admin|admin-web)       start_service 30019 "$mode" ;;
+    30018|admin|admin-web)       start_service 30018 "$mode" ;;
+    30019|mobile|app|mobile-app) start_service 30019 "$mode" ;;
     30020|api|backend)           start_service 30020 "$mode" ;;
     all)
       start_service 30020 "$mode" # 백엔드(:30020) 우선 기동
-      start_service 30018 "$mode" # 모바일 앱(:30018) 기동
-      start_service 30019 "$mode" # 관리자 웹(:30019) 기동
+      start_service 30018 "$mode" # 웹 : 관리자(:30018) 기동
+      start_service 30019 "$mode" # 모바일 앱(:30019) 기동
       ;;
     *)
       echo -e "${RED}잘못된 대상입니다: ${target} (사용 가능: all, 30018, 30019, 30020)${NC}"
@@ -343,10 +343,10 @@ cmd_status() {
     fi
   done
 
-  echo -e "\n🌐 접속 URL (./apps/ 하위 멀티 서비스):"
-  echo -e "   - [Port 30018] 모바일 앱 (정원주·조경사) : http://0.0.0.0:30018  (./apps/mobile-app)"
-  echo -e "   - [Port 30019] 통합 관리자 웹 & 스튜디오 : http://0.0.0.0:30019  (./apps/admin-web)"
-  echo -e "   - [Port 30020] 백엔드 REST API 서버      : http://0.0.0.0:30020/api  (./apps/backend)"
+  echo -e "\n🌐 운영 접속 도메인 및 로컬 바인딩 URL:"
+  echo -e "   - [Port 30018] 웹 : 관리자 (스튜디오)  : https://jupiter.axfoundly.com (http://0.0.0.0:30018)  (./apps/admin-web)"
+  echo -e "   - [Port 30019] 모바일 앱 (정원주·조경사) : https://saturn.axfoundly.com  (http://0.0.0.0:30019)  (./apps/mobile-app)"
+  echo -e "   - [Port 30020] backend REST API 서버    : https://uranus.axfoundly.com/api (http://0.0.0.0:30020/api)  (./apps/backend)"
   echo -e "${CYAN}=================================================================${NC}"
 }
 
@@ -404,7 +404,7 @@ case "$MAIN_ARG" in
     echo -e "   • ./run_port.sh stop all         (전체 프로세스 종료)"
     echo -e "   • ./run_port.sh restart all      (전체 재시작)"
     echo -e "   • ./run_port.sh status           (가동 상태 점검)"
-    echo -e "   ※ 대상 자리에 30018(mobile), 30019(admin), 30020(backend)을 지정하여 개별 제어 가능\n"
+    echo -e "   ※ 대상 자리에 30018(admin), 30019(mobile), 30020(backend)을 지정하여 개별 제어 가능\n"
     ;;
   *)
     echo -e "${RED}알 수 없는 명령어: ${MAIN_ARG}${NC}"
