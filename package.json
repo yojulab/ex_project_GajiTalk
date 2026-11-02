@@ -17,6 +17,8 @@
     "status": "./run_port.sh status",
     "env:prod": "./generate_env.sh",
     "env:setup": "./generate_env.sh",
+    "db:init": "./init_db.sh",
+    "seed": "./init_db.sh",
     "dev:mobile": "./run_port.sh dev 30018",
     "dev:admin": "./run_port.sh dev 30019",
     "dev:backend": "./run_port.sh dev 30020",

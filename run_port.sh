@@ -19,6 +19,7 @@
 #   • restart           [all|30018|30019|30020] : 재시작
 #   • status                                    : 포트 가동 상태 점검
 #   • env               [MONGODB_URI]           : 운영 환경 변수(.env) 자동 생성
+#   • seed              [MONGODB_URI]           : 운영 DB 초기값 설정 및 시딩 (./backend/.env 참조)
 #
 # [간편 축약 실행 예시]
 #   • ./run_port.sh all             -> 전체 서비스(30018, 30019, 30020) 운영 모드 기동
@@ -382,6 +383,11 @@ case "$MAIN_ARG" in
   env|setup-env)
     shift || true
     "${PROJECT_DIR}/generate_env.sh" "$@"
+    exit $?
+    ;;
+  seed|init-db)
+    shift || true
+    "${PROJECT_DIR}/init_db.sh" "$@"
     exit $?
     ;;
   30018|30019|30020|mobile|admin|api|backend|all)
