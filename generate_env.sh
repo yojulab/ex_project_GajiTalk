@@ -29,6 +29,12 @@
 #      ./generate_env.sh --dry-run
 # ==============================================================================
 
+# source 또는 . 으로 실행 시 터미널 세션 닫힘(exit) 방지 -> 서브쉘 위임
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
+  bash "${BASH_SOURCE[0]}" "$@"
+  return $? 2>/dev/null || exit $?
+fi
+
 set -euo pipefail
 
 # 터미널 컬러 정의
@@ -41,6 +47,24 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PATH="${PROJECT_ROOT}/node_modules/.bin:${PATH}"
+
+# 하위 워크스페이스 심볼릭 링크 안전 복원
+ensure_bin_links() {
+  local root_bin="${PROJECT_ROOT}/node_modules/.bin"
+  if [ -d "$root_bin" ]; then
+    for sub in apps/mobile-app apps/admin-web apps/backend; do
+      local sub_dir="${PROJECT_ROOT}/${sub}"
+      if [ -d "$sub_dir" ]; then
+        mkdir -p "${sub_dir}/node_modules"
+        rm -rf "${sub_dir}/node_modules/.bin" 2>/dev/null || true
+        ln -sf "${root_bin}" "${sub_dir}/node_modules/.bin" 2>/dev/null || true
+      fi
+    done
+  fi
+}
+ensure_bin_links
+
 BACKUP_DIR="${PROJECT_ROOT}/.env_backups"
 TIMESTAMP="$(date +'%Y%m%d_%H%M%S')"
 GEN_DATE="$(date +'%Y-%m-%d %H:%M:%S')"

@@ -28,14 +28,15 @@
 #   • ./run_port.sh stop all        -> 전체 서비스 일괄 중지
 #   • ./run_port.sh status          -> 현재 포트 및 PID 점검
 # ==============================================================================
-if [ "$0" != "${BASH_SOURCE[0]}" ]; then
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
   bash "${BASH_SOURCE[0]}" "$@"
-  return $? 2>/dev/null || true
+  return $? 2>/dev/null || exit $?
 fi
 
 set -uo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PATH="${PROJECT_DIR}/node_modules/.bin:${PATH}"
 LOG_DIR="${PROJECT_DIR}/logs"
 TODAY=$(date +"%Y%m%d")
 mkdir -p "$LOG_DIR"
@@ -48,16 +49,16 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-# 하위 워크스페이스(./apps/*) .bin 심볼릭 링크 자동 점검 및 복원
+# 하위 워크스페이스(./apps/*) .bin 심볼릭 링크 자동 점검 및 복원 (절대 경로 보장)
 ensure_bin_links() {
   local root_bin="${PROJECT_DIR}/node_modules/.bin"
   if [ -d "$root_bin" ]; then
     for sub in apps/mobile-app apps/admin-web apps/backend; do
-      if [ -d "${PROJECT_DIR}/${sub}" ]; then
-        mkdir -p "${PROJECT_DIR}/${sub}/node_modules"
-        if [ ! -e "${PROJECT_DIR}/${sub}/node_modules/.bin" ]; then
-          ln -s "../../../node_modules/.bin" "${PROJECT_DIR}/${sub}/node_modules/.bin" 2>/dev/null || true
-        fi
+      local sub_dir="${PROJECT_DIR}/${sub}"
+      if [ -d "$sub_dir" ]; then
+        mkdir -p "${sub_dir}/node_modules"
+        rm -rf "${sub_dir}/node_modules/.bin" 2>/dev/null || true
+        ln -sf "${root_bin}" "${sub_dir}/node_modules/.bin" 2>/dev/null || true
       fi
     done
   fi

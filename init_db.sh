@@ -27,6 +27,12 @@
 #   -h, --help         도움말 출력
 # ==============================================================================
 
+# source 또는 . 으로 실행 시 터미널 세션 닫힘(exit) 방지 -> 서브쉘 위임
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
+  bash "${BASH_SOURCE[0]}" "$@"
+  return $? 2>/dev/null || exit $?
+fi
+
 set -euo pipefail
 
 # 터미널 색상
@@ -40,6 +46,25 @@ NC='\033[0m'
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="${PROJECT_ROOT}/apps/backend"
+
+# node_modules/.bin 경로를 PATH 최우선으로 등록
+export PATH="${PROJECT_ROOT}/node_modules/.bin:${BACKEND_DIR}/node_modules/.bin:${PATH}"
+
+# 하위 워크스페이스 심볼릭 링크 안전 복원 (tsc: not found 원천 차단)
+ensure_bin_links() {
+  local root_bin="${PROJECT_ROOT}/node_modules/.bin"
+  if [ -d "$root_bin" ]; then
+    for sub in apps/mobile-app apps/admin-web apps/backend; do
+      local sub_dir="${PROJECT_ROOT}/${sub}"
+      if [ -d "$sub_dir" ]; then
+        mkdir -p "${sub_dir}/node_modules"
+        rm -rf "${sub_dir}/node_modules/.bin" 2>/dev/null || true
+        ln -sf "${root_bin}" "${sub_dir}/node_modules/.bin" 2>/dev/null || true
+      fi
+    done
+  fi
+}
+ensure_bin_links
 
 # 1. ./backend/.env 또는 ./apps/backend/.env 탐색
 ENV_FILE=""
@@ -173,11 +198,19 @@ if [ "$DRY_RUN" = true ]; then
   exit 0
 fi
 
-# 백엔드 컴파일 상태 점검 및 자동 빌드
+# 백엔드 컴파일 상태 점검 및 자동 빌드 (안전한 tsc 탐색)
 SEED_JS="${BACKEND_DIR}/dist/seed/seedRunner.js"
 if [ ! -f "$SEED_JS" ]; then
   echo -e "${CYAN}🔨 백엔드 컴파일 산출물이 없어 사전 컴파일을 진행합니다...${NC}"
-  (cd "$BACKEND_DIR" && npm run build)
+  if [ -x "${PROJECT_ROOT}/compile.sh" ]; then
+    "${PROJECT_ROOT}/compile.sh" 30020
+  elif [ -x "${PROJECT_ROOT}/node_modules/.bin/tsc" ]; then
+    (cd "$BACKEND_DIR" && "${PROJECT_ROOT}/node_modules/.bin/tsc")
+  elif command -v tsc >/dev/null 2>&1; then
+    (cd "$BACKEND_DIR" && tsc)
+  else
+    (cd "$BACKEND_DIR" && npm run build)
+  fi
 fi
 
 # MongoDB 연결성 사전 프로브 (네트워크 호스트 추출)
@@ -223,8 +256,10 @@ fi
 
 if [ "$RUN_SUCCESS" = false ]; then
   echo -e "${YELLOW}⚠️ node dist 실행 실패, ts-node를 통해 재시도합니다...${NC}"
-  if npx ts-node src/seed/seedRunner.ts; then
-    RUN_SUCCESS=true
+  if [ -x "${PROJECT_ROOT}/node_modules/.bin/ts-node" ]; then
+    "${PROJECT_ROOT}/node_modules/.bin/ts-node" src/seed/seedRunner.ts && RUN_SUCCESS=true || true
+  elif command -v ts-node >/dev/null 2>&1; then
+    ts-node src/seed/seedRunner.ts && RUN_SUCCESS=true || true
   fi
 fi
 

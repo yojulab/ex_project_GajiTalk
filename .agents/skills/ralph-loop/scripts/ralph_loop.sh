@@ -5,6 +5,12 @@
 # Usage: ./scripts/ralph_loop.sh "Task Description" [MAX_ITERATIONS] [PROMISE]
 # ==============================================================================
 
+# source 또는 . 으로 실행 시 터미널 세션 닫힘(exit) 방지 -> 서브쉘 위임
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
+  bash "${BASH_SOURCE[0]}" "$@"
+  return $? 2>/dev/null || exit $?
+fi
+
 set -euo pipefail
 
 TASK="${1:-"수형(SOOHYUNG) 조경·수목 전지 AI 시뮬레이션 및 정원주-조경사 매칭 플랫폼(30018/30019/30020) 구현 및 검증"}"
